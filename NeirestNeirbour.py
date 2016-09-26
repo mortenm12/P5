@@ -19,15 +19,12 @@ while line != "":           #read until EOF
     rat = int(info[2])      #Rating
     
     try:
-        ListOfUsers[uid].addRating(mid,rat)
+        ListOfUsers[uid].addRating(mid,rat) #if the userId is in the list, add a rating
         
-    except IndexError:
+    except IndexError:                      #if the user isn't in the list make a new user and add the rating
         new = user(uid)
         new.addRating(mid,rat)
         ListOfUsers.insert(uid, new)
-
-        
-    
 
     line = data.readline()
 
@@ -35,21 +32,21 @@ data.close()
 print "i'm done"
 
 def FindNearestNeighbor(uid, listOfUsers):
-    bestUser = user(10000)
+    bestUser = user(10000)                  
     bestScore = 0
     theUser = listOfUsers[uid]
-    for x in listOfUsers:
-        if x != theUser:
-            score = 0
-            for movie in x.listOfRatings:
+    for User in listOfUsers:               #for every user in the list
+        if User != theUser:                #wich is not the user we are comparing against
+            score = 0                    # set the score to 0
+            for movie in User.listOfRatings:   #for every movie in the rating list
                 try:
-                    if theUser.listOfRatings[movie]:
-                        if x.listOfRatings[movie] == theUser.listOfRatings[movie]:
-                            score += 1
+                    if theUser.listOfRatings[movie]: #if the movie is in the users rating list
+                        if User.listOfRatings[movie] == theUser.listOfRatings[movie]: #and the ratings are equal
+                            score += 1          #add 1 to the score
                 except IndexError:
                     score = score
-            if score > bestScore:
-                bestUser = x
+            if score > bestScore:   #if score is better than the best score
+                bestUser = User        #set the user to the bestuser
 
     return bestUser
 
