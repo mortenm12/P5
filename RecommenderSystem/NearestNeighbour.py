@@ -11,8 +11,8 @@ ListOfUsers = []
 
 data = open("u1.test", "r")
 
-line = data.readline()
-while line != "":  # read until EOF
+
+for line in data:
     info = line.split()  # split at TAB
     uid = int(info[0])  # UserId
     mid = int(info[1])  # MovieId
@@ -26,9 +26,10 @@ while line != "":  # read until EOF
         new.add_rating(mid, rat)
         ListOfUsers.insert(uid, new)
 
-    line = data.readline()
 
-data.close()
+if not data.closed:
+    data.close()
+
 print("i'm done")
 
 
