@@ -1,9 +1,9 @@
 class User:
-    def __init__(self, u_id):
+    def __init__(self, u_id: object):
         self.u_id = u_id
         self.list_of_ratings = []
 
-    def add_rating(self, m_id, rating):
+    def add_rating(self, m_id: object, rating: object) -> object:
         self.list_of_ratings.insert(m_id, rating)
 
 
@@ -19,7 +19,7 @@ while line != "":  # read until EOF
     rat = int(info[2])  # Rating
 
     try:
-        ListOfUsers[uid].addRating(mid, rat)  # if the userId is in the list, add a rating
+        ListOfUsers[uid].add_rating(mid, rat)  # if the userId is in the list, add a rating
 
     except IndexError:  # if the user isn't in the list make a new user and add the rating
         new = User(uid)
@@ -39,10 +39,10 @@ def find_nearest_neighbor(u_id, list_of_users):
     for user in list_of_users:  # for every user in the list
         if user != the_user:  # wich is not the user we are comparing against
             score = 0  # set the score to 0
-            for movie in user.listOfRatings:  # for every movie in the rating list
+            for movie in user.list_of_ratings:  # for every movie in the rating list
                 try:
-                    if the_user.listOfRatings[movie]:  # if the movie is in the users rating list
-                        if user.listOfRatings[movie] == the_user.listOfRatings[movie]:  # and the ratings are equal
+                    if the_user.list_of_ratings[movie]:  # if the movie is in the users rating list
+                        if user.list_of_ratings[movie] == the_user.list_of_ratings[movie]:  # and the ratings are equal
                             score += 1  # add 1 to the score
                 except IndexError:
                     score = score
@@ -52,4 +52,4 @@ def find_nearest_neighbor(u_id, list_of_users):
     return best_user
 
 
-print(find_nearest_neighbor(100, ListOfUsers).UId)
+print(find_nearest_neighbor(100, ListOfUsers).u_id)
