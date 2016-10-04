@@ -1,8 +1,9 @@
 import numpy
 
+
 def read_movies():
     D = []
-    item_file = open("u.item", "r")
+    item_file = open("u.item", 'r', encoding='iso-8859-1')
 
     for line in item_file:
         mov = line.split('|')

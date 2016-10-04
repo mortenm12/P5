@@ -14,7 +14,7 @@ def write_numpy_matrix(m, file):
         result.close()
 
 
-def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
+def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
     Q = Q.T
     for step in range(0, steps):
         print(step, end=' ')
