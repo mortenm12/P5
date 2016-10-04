@@ -1,67 +1,61 @@
-from Classes import Movie, User
-from CalculationOfAverages import *
+import numpy
 
-movie_ids = []
-movies = {}
-user_ids = []
-users = {}
-matrix = []
+def read_movies():
+    D = []
+    item_file = open("u.item", "r")
 
-item_file = open("u.item", "r")
+    for line in item_file:
+        mov = line.split('|')
+        mid = int(mov[0])
+        D.append(mid)
 
-for line in item_file:
-    mov = line.split('|')
-    id = int(mov[0])
-    movie_ids.append(id)
-    movies[id] = Movie(id)
+    if not item_file.closed:
+        item_file.close()
 
-item_file.close()
+    return numpy.array(D)
 
-user_file = open("u.user", "r")
 
-for line in user_file:
-    user = line.split('|')
-    id = int(user[0])
-    user_ids.append(id)
-    users[id] = User(id)
+def read_users():
+    U = []
+    user_file = open("u.user", "r")
 
-user_file.close()
+    for line in user_file:
+        user = line.split('|')
+        uid = int(user[0])
+        U.append(uid)
 
-for mid in movie_ids:
-    matrix.insert(mid - 1, [])
-    for uid in user_ids:
-        matrix[mid - 1].insert(uid - 1, 0)
+    if not user_file.closed:
+        user_file.close()
 
-data_file = open("u.data", "r")
+    return numpy.array(U)
 
-for line in data_file:
-    data = line.split()
-    matrix[int(data[1]) - 1][int(data[0]) - 1] = int(data[2])
 
-data_file.close()
+def generate_matrix(U, D):
+    R = []
+    for uid in U:
+        R.insert(uid - 1, [])
+        for mid in D:
+            R[uid - 1].insert(mid - 1, 0)
 
-total_average_rating = calculate_averages(movies, matrix)
+    data_file = open("u.data", "r")
 
-for key in movies:
-    calculate_movie_bias(movies[key], total_average_rating)
+    for line in data_file:
+        data = line.split()
+        R[int(data[0]) - 1][int(data[1]) - 1] = int(data[2])
 
-for key in users:
-    calculate_user_bias(users[key], movies, matrix)
+    if not data_file.closed:
+        data_file.close()
 
-for i in range(0, len(matrix)):
-    for j in range(0, len(matrix[i])):
-        if matrix[i][j] == 0:
-            rating = total_average_rating + movies[i + 1].bias + users[j + 1].bias
-            if rating <= 0:
-                matrix[i][j] = 0
-            else:
-                matrix[i][j] = rating
+    return numpy.array(R)
 
-result_file = open("result", "w")
 
-for movie in matrix:
-    for user in movie:
-        result_file.write("%.2f " % user)
-    result_file.write("\n")
+def initialize_latent_factor_matrix(n, K):
+    m = []
+    for i in range(0, n):
+        m.insert(i, [])
+        for j in range(0, K):
+            m[i].insert(j, 2)
 
-result_file.close()
+    return numpy.array(m)
+
+
