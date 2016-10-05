@@ -62,7 +62,7 @@ class User():
         for user in user_who_have_seen_this_movie:
             sum1 += user.rated_movies[movie] - user.average_rating
 
-        return self.average_rating + (sum1 / len(user_who_have_seen_this_movie))
+        return (self.average_rating / len(self.rated_movies)) + (sum1 / len(user_who_have_seen_this_movie))
 
     def find_k_nearest_neighbour(self, k, movie):
         users = []
@@ -74,11 +74,22 @@ class User():
         users.sort(key=lambda x: x[1])
 
         result = []
+        if len(users) <= k:
+            return users
 
         for x in range(k):
             result.insert(users[x])
 
         return result
+
+    def recommend(self, movie):
+        users = self.find_k_nearest_neighbour(5, movie)
+        sum1 = 0
+        for user in users:
+            sum1 += self.weight(user)
+
+        return (sum1/len(users)) + self.mean_center(movie)
+
 
 
 
@@ -134,4 +145,4 @@ if not movie_file.closed:
 for movie in all_movies:
     for user in list_of_users:
         if movie not in user.rated_movies:
-            user.recommended[movie.m_id] = #her skal der laves en algoritme der sender en rating :D
+            user.recommended[movie.m_id] = user.recommend(movie)
