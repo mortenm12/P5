@@ -1,7 +1,9 @@
 import time
+from ConvertOriginalToFinal import convert_original_to_final
 
 class Movie:
-    def __init__(self, name, date, genres):
+    def __init__(self, id, name, date, genres):
+        self.id = id
         self.name = name
         self.date = date
         self.genres = genres
@@ -10,12 +12,12 @@ class Movie:
 
 
 def read_movie_file():
-    movie_file = open("FinalData/Movies", "r", encoding="iso_8859_15")
+    movie_file = open("FinalData/Movies.data", "r", encoding="iso_8859_15")
     movies = []
 
     for line in movie_file:
         parts = line.split('|')
-        movies.append(Movie(parts[0], parts[1], parts[2]))
+        movies.append(Movie(parts[0], parts[1], parts[2], parts[3]))
 
     if not movie_file.closed:
         movie_file.close()
@@ -24,10 +26,11 @@ def read_movie_file():
 
 
 def remake_movies_file(movies):
-    movies_file = open("FinalData\Movies", "w")
+    movies_file = open("FinalData/Movies.data", "w")
 
     for movie in movies:
-        movies_file.write('|'.join([movie.name, movie.date, movie.genres, ', '.join(movie.actors), '']))
+        movies_file.write(
+            '|'.join([movie.id, movie.name, movie.date, movie.genres, ','.join(movie.actors), ''])+'\n')
 
     if not movies_file.closed:
         movies_file.close()
@@ -38,7 +41,8 @@ def extract_movie_title(movie_parts):
     for i in range(0, len(movie_parts)):
         if movie_parts[i].endswith('\n'):
             movie_parts[i] = movie_parts[i][:-1]
-        if movie_parts[i].startswith('(') and movie_parts[i].endswith(')'):
+        if len(movie_parts[i]) == 6 and movie_parts[i].startswith('(') \
+                and movie_parts[i].endswith(')') and len(movie_parts[i][1:-1]) == 4:
             j = i + 1
             break
 
@@ -46,7 +50,17 @@ def extract_movie_title(movie_parts):
     return ' '.join(movie_parts)
 
 
-def insert_actors(movies, file):
+def write_actors_file(actors):
+    actors_file = open("FinalData/Actors.data", "w")
+
+    for i in range(0, len(actors)):
+        actors_file.write(str(i) + "|" + actors[i] + "\n")
+
+    if not actors_file.closed:
+        actors_file.close()
+
+
+def insert_actors(movies, file, actors, a):
     l = 0
     actors_file = open("OriginalData/" + file, "r", encoding="iso_8859_15")
 
@@ -76,6 +90,7 @@ def insert_actors(movies, file):
         movie_parts = parts[1].split()
         movie = extract_movie_title(movie_parts)
         actor_movies = [movie]
+        actor_key = a
 
         line = actors_file.readline()
         l += 1
@@ -91,7 +106,12 @@ def insert_actors(movies, file):
 
         for mov in movies:
             if mov.name in actor_movies:
-                mov.actors.append(actor)
+                if str(actor_key) not in mov.actors:
+                    mov.actors.append(str(actor_key))
+
+                if actor not in actors:
+                    actors.insert(actor_key, actor)
+                    a += 1
 
         print(str(l))
         line = actors_file.readline()
@@ -100,12 +120,15 @@ def insert_actors(movies, file):
     if not actors_file.closed:
         actors_file.close()
 
-    return movies
+    return movies, actors, a
 
+convert_original_to_final()
 movs = read_movie_file()
 time_at_start = time.clock()
-movs = insert_actors(movs, 'actors.list')
-movs = insert_actors(movs, 'actresses.list')
+actors = []
+movs, actors, a = insert_actors(movs, 'actors.list', actors, 0)
+movs, actors, a = insert_actors(movs, 'actresses.list', actors, a)
+write_actors_file(actors)
 time_at_end = time.clock()
 time_elapsed = time_at_end - time_at_start
 print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
