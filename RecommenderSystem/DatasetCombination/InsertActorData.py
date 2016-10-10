@@ -30,7 +30,7 @@ def remake_movies_file(movies):
 
     for movie in movies:
         movies_file.write(
-            '|'.join([movie.id, movie.name, movie.date, movie.genres, ','.join(movie.actors), ''])+'\n')
+            '|'.join([movie.id, movie.name, movie.date, movie.genres, ','.join(movie.actors), ','.join(movie.directors)])+'\n')
 
     if not movies_file.closed:
         movies_file.close()
@@ -58,6 +58,75 @@ def write_actors_file(actors):
 
     if not actors_file.closed:
         actors_file.close()
+
+
+def write_directors_file(directors):
+    directors_file = open("FinalData/Directors.data", "w")
+
+    for i in range(0, len(directors)):
+        directors_file.write(str(i) + "|" + directors[i] + "\n")
+
+    if not directors_file.closed:
+        directors_file.close()
+
+
+def insert_directors(movies):
+    directors = []
+    a = 0
+    l = 0
+    directors_file = open("OriginalData/directors.list", "r", encoding="iso_8859_15")
+
+    line = directors_file.readline()
+    l += 1
+
+    while line != 'THE DIRECTORS LIST\n':
+        line = directors_file.readline()
+        l += 1
+
+    for i in range(0, 4):
+        directors_file.readline()
+        l += 1
+
+    line = directors_file.readline()
+    l += 1
+    while not line.startswith('----'):
+        parts = line.split('\t')
+        parts = [x for x in parts if x]
+        director = parts[0]
+        movie_parts = parts[1].split()
+        movie = extract_movie_title(movie_parts)
+        director_movies = [movie]
+        director_key = a
+
+        line = directors_file.readline()
+        l += 1
+        while line != '\n':
+            parts = line.split()
+            parts = [x for x in parts if x]
+            movie = extract_movie_title(parts)
+            if movie not in director_movies:
+                director_movies.append(movie)
+
+            line = directors_file.readline()
+            l += 1
+
+        for mov in movies:
+            if mov.name in director_movies:
+                if str(director_key) not in mov.directors:
+                    mov.directors.append(str(director_key))
+
+                if director not in directors:
+                    directors.insert(director_key, director)
+                    a += 1
+
+        print(str(l))
+        line = directors_file.readline()
+        l += 1
+
+    if not directors_file.closed:
+        directors_file.close()
+
+    return movies, directors
 
 
 def insert_actors(movies, file, actors, a):
@@ -126,9 +195,11 @@ convert_original_to_final()
 movs = read_movie_file()
 time_at_start = time.clock()
 actors = []
+movs, directors = insert_directors(movs)
 movs, actors, a = insert_actors(movs, 'actors.list', actors, 0)
 movs, actors, a = insert_actors(movs, 'actresses.list', actors, a)
 write_actors_file(actors)
+write_directors_file(directors)
 time_at_end = time.clock()
 time_elapsed = time_at_end - time_at_start
 print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
