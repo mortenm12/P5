@@ -19,6 +19,7 @@ def write_numpy_matrix(m, file):
         result.close()
 
 
+# Method to calculate the recommendations from the P and Q matrices.
 def calculate_recommendations(nP, nQ):
     recommendation_file = open("Recommendations.data", "w")
 
@@ -35,6 +36,7 @@ def calculate_recommendations(nP, nQ):
 
     if not recommendation_file.closed:
         recommendation_file.close()
+
 
 # The factorization algorithm.
 # The point of this algorithm is to stepwise approximate P and Q so that PxQ approximates R.
