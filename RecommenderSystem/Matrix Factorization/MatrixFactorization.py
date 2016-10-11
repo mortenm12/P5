@@ -55,6 +55,14 @@ write_numpy_matrix(nR, "R_matrix")
 write_numpy_matrix(nP, "P_matrix")
 write_numpy_matrix(nQ, "Q_matrix")
 
+recommendation_file = open("Recommendations.data", "w")
 
-
-
+a = 0
+most_accurate_product = 0
+for i in range(0, len(nP)):
+    for j in range(0, len(nQ)):
+        result = numpy.dot(nP[i, :], nQ[j, :])
+        if result > most_accurate_product:
+            most_accurate_product = result
+            a = j
+    recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "\n")
