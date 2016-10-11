@@ -79,10 +79,10 @@ class User():
         for user in list_of_users:
             #print(user.rated_movies)
             if int(movie) in user.rated_movies:
-                #print(movie)
-                users.insert(user.u_id, [user, self.weight(user)])
+                #print(self.weight(user))
+                users.insert(user.u_id, self.weight(user))
 
-        users.sort(key=lambda x: x[1])
+        users.sort(key=lambda x: x)
 
         result = []
         if len(users) <= k:
@@ -98,7 +98,7 @@ class User():
         sum1 = 0
         for user in users:
             #print(user)
-            sum1 += int(user[1])
+            sum1 += int(user)
         if len(users) == 0:
             return self.mean_center(movie)
         else:
