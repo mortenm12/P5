@@ -1,6 +1,8 @@
 import math
 
 def cos(a,b):
+    if lenght_of_vector(a) * lenght_of_vector(b) == 0:
+        return 0
     return dot(a,b) / (lenght_of_vector(a) * lenght_of_vector(b))
 
 def dot(a,b):
@@ -29,6 +31,7 @@ class User():
         self.u_sex = u_sex
         self.u_prof = u_prof
         self.u_zip = u_zip
+        self.recommended = []
 
     def add_rating(self, m_id, rat):
         self.rated_movies[m_id] = rat
@@ -42,7 +45,7 @@ class User():
     def find_both_rated_movies(self, user2):
         rated = [[],[]]
         for movie in self.rated_movies:
-            if movie in user2.rated_movies:
+            if int(movie) in user2.rated_movies:
                 rated[0].append(self.rated_movies[movie])
                 rated[1].append(user2.rated_movies[movie])
         return rated
@@ -61,14 +64,22 @@ class User():
 
         for user in user_who_have_seen_this_movie:
             sum1 += user.rated_movies[movie] - user.average_rating
-
-        return (self.average_rating / len(self.rated_movies)) + (sum1 / len(user_who_have_seen_this_movie))
+        if len(self.rated_movies) == 0 and len (user_who_have_seen_this_movie) == 0:
+            return self.average_rating + sum1
+        elif len(self.rated_movies) == 0:
+            return self.average_rating + (sum1 / len(user_who_have_seen_this_movie))
+        elif len(user_who_have_seen_this_movie) == 0:
+            return (self.average_rating / len(self.rated_movies)) + sum1
+        else:
+            return (self.average_rating / len(self.rated_movies)) + (sum1 / len(user_who_have_seen_this_movie))
 
     def find_k_nearest_neighbour(self, k, movie):
         users = []
 
         for user in list_of_users:
-            if movie in user.ratedmovies:
+            #print(user.rated_movies)
+            if int(movie) in user.rated_movies:
+                #print(movie)
                 users.insert(user.u_id, [user, self.weight(user)])
 
         users.sort(key=lambda x: x[1])
@@ -78,7 +89,7 @@ class User():
             return users
 
         for x in range(k):
-            result.insert(users[x])
+            result.append(users[x])
 
         return result
 
@@ -86,9 +97,12 @@ class User():
         users = self.find_k_nearest_neighbour(5, movie)
         sum1 = 0
         for user in users:
-            sum1 += self.weight(user)
-
-        return (sum1/len(users)) + self.mean_center(movie)
+            #print(user)
+            sum1 += int(user[1])
+        if len(users) == 0:
+            return self.mean_center(movie)
+        else:
+            return (sum1/len(users)) + self.mean_center(movie)
 
 
 
@@ -141,8 +155,25 @@ for line in movie_file:
 if not movie_file.closed:
     movie_file.close()
 
-
+i = 0
 for movie in all_movies:
+    i += 1
+    print(round((i / len(all_movies)) * 100,2), "%")
     for user in list_of_users:
         if movie not in user.rated_movies:
-            user.recommended[movie.m_id] = user.recommend(movie)
+            user.recommended.insert(int(movie), float(user.recommend(movie)))
+
+output = open("data.txt", "w")
+for movie in all_movies:
+    output.write(str(movie) + "\t")
+output.writelines("\n")
+for user in list_of_users:
+    output.write(str(user.u_id) + "\t")
+    for movie in all_movies:
+        if movie in user.recommended:
+            output.write(str(user.recommended[movie]) + " ")
+        else:
+            output.write("0 ")
+    output.writelines("\n")
+if not output.closed:
+    output.close()
