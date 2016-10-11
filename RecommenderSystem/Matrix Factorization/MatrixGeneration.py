@@ -1,6 +1,7 @@
 import numpy
 
 
+# Read the movies from the item file. OBS: Outdated.
 def read_movies():
     D = []
     item_file = open("u.item", 'r', encoding='iso-8859-1')
@@ -16,6 +17,7 @@ def read_movies():
     return numpy.array(D)
 
 
+# Read the users from the user file. OBS: Outdated.
 def read_users():
     U = []
     user_file = open("u.user", "r")
@@ -31,7 +33,9 @@ def read_users():
     return numpy.array(U)
 
 
+# Generate a rating matrix based on the user/movie lists from the read_users and read_movies methods. OBS: Outdated.
 def generate_matrix(U, D):
+    # Generate a 0 initialized matrix.
     R = []
     for uid in U:
         R.insert(uid - 1, [])
@@ -40,6 +44,7 @@ def generate_matrix(U, D):
 
     data_file = open("u.data", "r")
 
+    # Insert ratings into the matrix where applicable.
     for line in data_file:
         data = line.split()
         R[int(data[0]) - 1][int(data[1]) - 1] = int(data[2])
@@ -48,15 +53,5 @@ def generate_matrix(U, D):
         data_file.close()
 
     return numpy.array(R)
-
-
-def initialize_latent_factor_matrix(n, K):
-    m = []
-    for i in range(0, n):
-        m.insert(i, [])
-        for j in range(0, K):
-            m[i].insert(j, 2)
-
-    return numpy.array(m)
 
 
