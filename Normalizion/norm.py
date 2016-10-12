@@ -34,7 +34,7 @@ class User():
         self.recommended = []
 
     def add_rating(self, m_id, rat):
-        self.rated_movies[m_id] = rat
+        self.rated_movies[int(m_id)] = rat
 
     def calculate_average_rating(self):
         sum1 = 0
@@ -77,12 +77,10 @@ class User():
         users = []
 
         for user in list_of_users:
-            #print(user.rated_movies)
             if int(movie) in user.rated_movies:
-                #print(self.weight(user))
-                users.insert(user.u_id, self.weight(user))
+                users.insert(user.u_id, [user, self.weight(user)])
 
-        users.sort(key=lambda x: x)
+        users.sort(key=lambda x: x[1])
 
         result = []
         if len(users) <= k:
@@ -93,16 +91,18 @@ class User():
 
         return result
 
-    def recommend(self, movie):
+    def recommend(self, movie): #side 115
         users = self.find_k_nearest_neighbour(5, movie)
         sum1 = 0
+        sum2 = 0
         for user in users:
-            #print(user)
-            sum1 += int(user)
-        if len(users) == 0:
+            #print(movie)
+            sum1 += user[1] * user[0].rated_movies[int(movie)]
+            sum2 += user[1]
+        if sum2 == 0:
             return self.mean_center(movie)
         else:
-            return (sum1/len(users)) + self.mean_center(movie)
+            return (sum1/sum2) + self.mean_center(movie)
 
 
 
@@ -161,6 +161,7 @@ for movie in all_movies:
     print(round((i / len(all_movies)) * 100,2), "%")
     for user in list_of_users:
         if movie not in user.rated_movies:
+            #print(str(user.recommend(movie)) + " recomended")
             user.recommended.insert(int(movie), float(user.recommend(movie)))
 
 output = open("data.txt", "w")
