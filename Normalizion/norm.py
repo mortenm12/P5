@@ -156,25 +156,23 @@ if not movie_file.closed:
     movie_file.close()
 
 i = 0
-for movie in all_movies:
-    i += 1
-    print(round((i / len(all_movies)) * 100,2), "%")
-    for user in list_of_users:
-        if movie not in user.rated_movies:
-            #print(str(user.recommend(movie)) + " recomended")
-            user.recommended.insert(int(movie), float(user.recommend(movie)))
 
 output = open("data.txt", "w")
+output.write("\t")
 for movie in all_movies:
-    output.write(str(movie) + "\t")
+    output.write(str(movie) + "   \t")
 output.writelines("\n")
 for user in list_of_users:
-    output.write(str(user.u_id) + "\t")
+    i += 1
+    print(round((i / len(list_of_users)) * 100,1), "%")
+    output.write(str(user.u_id) + " \t")
     for movie in all_movies:
-        if movie in user.recommended:
-            output.write(str(user.recommended[movie]) + " ")
+        if movie not in user.rated_movies:
+            #print(str(user.recommend(movie)) + " recomended")
+            output.write(str(round(user.recommend(movie),1)) + " \t")
+            #print(user.recommended)
         else:
-            output.write("0 ")
+            output.write("0\t")
     output.writelines("\n")
 if not output.closed:
     output.close()
