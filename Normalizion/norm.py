@@ -1,47 +1,62 @@
+"""
+Implementation of K-Nearest Neighbour, with normalization and meancenter.
+Morten Meyer Rasmussen
+Every page numbers is a refenece to the book: Recommender Systems Handbook
+"""
 import math
 
-def cos(a,b):
+#a and b is a vector of the same dimensions
+#the output is a number between 0 and 1 where 1 is an index of that the two vectors is parallel
+def cos(a,b): #page 124
     if lenght_of_vector(a) * lenght_of_vector(b) == 0:
         return 0
     return dot(a,b) / (lenght_of_vector(a) * lenght_of_vector(b))
 
+#a and b is a vector of the same dimensions
+#the output is a scalar between a and b
 def dot(a,b):
-    summer = 0
+    sum1 = 0
     if len(a) == len(b):
         for x in range(len(a)):
-            summer += a[x] * b[x]
-        return summer
+            sum1 += a[x] * b[x]
+        return sum1
     else:
         raise IndexError("a and b should be the same length.")
 
+#a is vector
+#the output is the lenght og vector a
 def lenght_of_vector(a):
-    summer = 0
+    sum1 = 0
 
     for x in a:
-        summer += x ** 2
+        sum1 += x ** 2
 
-    return math.sqrt(summer)
+    return math.sqrt(sum1)
 
+#The class user is for storing every users ratings, and recommended movies
 class User():
-    def __init__(self, u_id, u_age, u_sex, u_prof, u_zip):
+
+    #u_id is every user identification number
+    def __init__(self, u_id):
         self.u_id = u_id
         self.average_rating = 0
         self.rated_movies = {}
-        self.u_age = u_age
-        self.u_sex = u_sex
-        self.u_prof = u_prof
-        self.u_zip = u_zip
         self.recommended = []
 
+    #m_id is the movies identifications number, and rat is the users rating of the movie
+    #it stores the rating in the users rated-movies
     def add_rating(self, m_id, rat):
         self.rated_movies[int(m_id)] = rat
 
+    #runs trough the users ratings and finds the average, and store it in the users overage_rating
     def calculate_average_rating(self):
         sum1 = 0
         for movie in self.rated_movies:
             sum1 += self.rated_movies[movie]
         self.average_rating = sum1 / len(self.rated_movies)
 
+    #user2 is a user who is not the user self
+    #returns an array of both the users ratings of movies the both have seen
     def find_both_rated_movies(self, user2):
         rated = [[],[]]
         for movie in self.rated_movies:
@@ -50,20 +65,27 @@ class User():
                 rated[1].append(user2.rated_movies[movie])
         return rated
 
-    def weight(self, user2): #124
+    #user2 is a user who is not the user self
+    #returns the weight between self and user2
+    def weight(self, user2): #page 124
         data = self.find_both_rated_movies(user2)
         return cos(data[0], data[1])
 
-    def mean_center(self, movie): #side 121
+    #movie is a movie in the dictionary all_movies
+    #Returns the average of the users ratings, and the average of what other rat the movie, compared to normal
+    def mean_center(self, movie): #page 121
         sum1 = 0
         user_who_have_seen_this_movie = []
 
+        #makes a list of all users who have seen the movie
         for user in list_of_users:
             if movie in user.rated_movies:
                 user_who_have_seen_this_movie.append(user)
 
+
         for user in user_who_have_seen_this_movie:
             sum1 += user.rated_movies[movie] - user.average_rating
+
         if len(self.rated_movies) == 0 and len (user_who_have_seen_this_movie) == 0:
             return self.average_rating + sum1
         elif len(self.rated_movies) == 0:
@@ -73,6 +95,8 @@ class User():
         else:
             return (self.average_rating / len(self.rated_movies)) + (sum1 / len(user_who_have_seen_this_movie))
 
+    #k is the numbers of nearest nieghbour the algorithm should find, and movie is the movie ever nieghbour should have rated
+    #returns a list of k numbers of users who have the heighest weight to the user self
     def find_k_nearest_neighbour(self, k, movie):
         users = []
 
@@ -82,21 +106,15 @@ class User():
 
         users.sort(key=lambda x: x[1])
 
-        result = []
-        if len(users) <= k:
-            return users
+        return users[:k]
 
-        for x in range(k):
-            result.append(users[x])
-
-        return result
-
-    def recommend(self, movie): #side 115
+    #movie is a movie in the dictionary all_movies
+    #return a recommendation for the user self on movie
+    def recommend(self, movie): #page 115
         users = self.find_k_nearest_neighbour(5, movie)
         sum1 = 0
         sum2 = 0
         for user in users:
-            #print(movie)
             sum1 += user[1] * user[0].rated_movies[int(movie)]
             sum2 += user[1]
         if sum2 == 0:
@@ -106,21 +124,16 @@ class User():
 
 
 
-
+#loader user data into the list_of_users
 all_users_data = open("u.user", "r")
 
 list_of_users = []
 
-
 for line in all_users_data:
     lines = line.split("|")
     id = int(lines[0])
-    age = int(lines[1])
-    sex = lines[2]
-    prof = lines[3]
-    zip = lines[4]
 
-    new_user = User(id, age, sex, prof, zip)
+    new_user = User(id)
     list_of_users.insert(id, new_user)
 
 
@@ -141,6 +154,7 @@ for line in all_ratings:
 if not all_ratings.closed:
     all_ratings.close()
 
+#loader all the movies into all_movies
 all_movies = {}
 
 movie_file = open("u.item", "r", encoding= 'ISO-8859-1')
@@ -155,6 +169,7 @@ for line in movie_file:
 if not movie_file.closed:
     movie_file.close()
 
+#writer and calculates the ratings into an output file
 i = 0
 
 output = open("data.txt", "w")
@@ -168,9 +183,7 @@ for user in list_of_users:
     output.write(str(user.u_id) + " \t")
     for movie in all_movies:
         if movie not in user.rated_movies:
-            #print(str(user.recommend(movie)) + " recomended")
             output.write(str(round(user.recommend(movie),1)) + " \t")
-            #print(user.recommended)
         else:
             output.write("0\t")
     output.writelines("\n")
