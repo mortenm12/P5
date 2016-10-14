@@ -5,6 +5,27 @@ Implementation of Matrix Factorization by Rasmus Jensen
 from MatrixGeneration import *
 import time
 import numpy
+import math
+
+
+# Calculate expected ratings and print ratings matrix.
+def calculate_result_matrix(P, Q, R):
+    list = []
+    for i in range(0, len(P)):
+        list.append([])
+        print(str(i) + ' ' + time.asctime(time.localtime(time.time())))
+        for j in range(0, len(Q)):
+            result = math.cos(numpy.dot(P[i, :], Q[j, :]))
+            if not R[i][j] > 0:
+                list[i].append(result)
+            else:
+                list[i].append(2.0)
+
+    recommendation_file = open("Recommendations.data", "w")
+    for i in range(0, len(list)):
+        recommendation_file.write(' '.join("{: .2f}".format(x * 2 + 3) if x != 2.0 else ' -  ' for x in list[i]) + '\n')
+    if not recommendation_file.closed:
+        recommendation_file.close()
 
 
 # Algorithm to write a matrix to a file
@@ -12,7 +33,7 @@ def write_numpy_matrix(m, file):
     result = open(file, "w")
     for i in range(0, len(m)):
         for j in range(0, len(m[i])):
-            result.write("%.2f " % m[i][j])
+            result.write("{: .2f} ".format(m[i][j]))
         result.write('\n')
 
     if not result.closed:
@@ -90,21 +111,25 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
     return P, Q.T
 
-# Initialize matrices and values.
-R = generate_matrix(read_users(), read_movies())
-K = 42
-P = numpy.random.rand(len(R), K)
-Q = numpy.random.rand(len(R[0]), K)
+def __main__():
+    # Initialize matrices and values.
+    R = generate_matrix(read_users(), read_movies())
+    K = 42
+    P = numpy.random.rand(len(R), K)
+    Q = numpy.random.rand(len(R[0]), K)
 
-# Run algorithm on matrices.
-nP, nQ = matrix_factorization(R, P, Q, K)
+    # Run algorithm on matrices.
+    nP, nQ = matrix_factorization(R, P, Q, K)
 
-# Calculate recommendation and write it to recommendation file.
-calculate_recommendations(nP, nQ)
+    # Calculate recommendation and write it to recommendation file.
+    calculate_recommendations(nP, nQ)
 
-# Calculate and write all matrices to files for inspection and saving purposes.
-nR = numpy.dot(nP, nQ.T)
-write_numpy_matrix(R, "result")
-write_numpy_matrix(nR, "R_matrix")
-write_numpy_matrix(nP, "P_matrix")
-write_numpy_matrix(nQ, "Q_matrix")
+    # Calculate and write all matrices to files for inspection and saving purposes.
+    nR = numpy.dot(nP, nQ.T)
+    write_numpy_matrix(R, "ratings")
+    write_numpy_matrix(nR, "R_matrix")
+    write_numpy_matrix(nP, "P_matrix")
+    write_numpy_matrix(nQ, "Q_matrix")
+
+    # Calculate the predicted rating matrix
+    calculate_result_matrix(nP, nQ, R)
