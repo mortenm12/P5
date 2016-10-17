@@ -1,6 +1,6 @@
 def convert_original_to_final():
-    oldGenres = open("OriginalData/u.genre", "r", encoding="iso_8859_15")
-    newGenres = open("FinalData/Genres.data", "w")
+    oldGenres = open("../OriginalData/u.genre", "r", encoding="iso_8859_15")
+    newGenres = open("../FinalData/Genres.data", "w")
 
     for line in oldGenres:
         parts = line.split('|')
@@ -13,8 +13,8 @@ def convert_original_to_final():
     if not newGenres.closed:
         newGenres.close()
 
-    oldUsers = open("OriginalData/u.user", "r", encoding="iso_8859_15")
-    newUsers = open("FinalData/Users.data", "w")
+    oldUsers = open("../OriginalData/u.user", "r", encoding="iso_8859_15")
+    newUsers = open("../FinalData/Users.data", "w")
 
     for line in oldUsers:
         newUsers.write(line)
@@ -25,8 +25,8 @@ def convert_original_to_final():
     if not newUsers.closed:
         newUsers.close()
 
-    oldRatings = open("OriginalData/u.data", "r", encoding="iso_8859_15")
-    newRatings = open("FinalData/Ratings.data", "w")
+    oldRatings = open("../OriginalData/u.data", "r", encoding="iso_8859_15")
+    newRatings = open("../FinalData/Ratings.data", "w")
 
     for line in oldRatings:
         parts = line.split()
@@ -38,8 +38,8 @@ def convert_original_to_final():
     if not newRatings.closed:
         newRatings.close()
 
-    oldMovies = open("OriginalData/u.item", "r", encoding="iso_8859_15")
-    newMovies = open("FinalData/Movies.data", "w")
+    oldMovies = open("../OriginalData/u.item", "r", encoding="iso_8859_15")
+    newMovies = open("../FinalData/Movies.data", "w")
 
     for line in oldMovies:
         parts = line.split('|')
@@ -58,6 +58,6 @@ def convert_original_to_final():
     if not newMovies.closed:
         newMovies.close()
 
-    actors = open("FinalData/Actors.data", "w")
+    actors = open("../FinalData/Actors.data", "w")
     actors.close()
 
