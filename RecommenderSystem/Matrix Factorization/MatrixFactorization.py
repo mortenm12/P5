@@ -111,6 +111,7 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
     return P, Q.T
 
+
 def __main__():
     # Initialize matrices and values.
     R = generate_matrix(read_users(), read_movies())
@@ -119,7 +120,7 @@ def __main__():
     Q = numpy.random.rand(len(R[0]), K)
 
     # Run algorithm on matrices.
-    nP, nQ = matrix_factorization(R, P, Q, K)
+    nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
     calculate_recommendations(nP, nQ)
@@ -133,3 +134,5 @@ def __main__():
 
     # Calculate the predicted rating matrix
     calculate_result_matrix(nP, nQ, R)
+
+__main__()
