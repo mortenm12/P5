@@ -51,9 +51,12 @@ class User():
     #runs trough the users ratings and finds the average, and store it in the users overage_rating
     def calculate_average_rating(self):
         sum1 = 0
-        for movie in self.rated_movies:
-            sum1 += self.rated_movies[movie]
-        self.average_rating = sum1 / len(self.rated_movies)
+        if len(self.rated_movies) == 0:
+            self.average_rating = 0
+        else:
+            for movie in self.rated_movies:
+                sum1 += self.rated_movies[movie]
+            self.average_rating = sum1 / len(self.rated_movies)
 
     #user2 is a user who is not the user self
     #returns an array of both the users ratings of movies the both have seen
@@ -140,7 +143,7 @@ for line in all_users_data:
 if not all_users_data.closed:
     all_users_data.close()
 
-all_ratings = open("u.data", "r")
+all_ratings = open("u1.test", "r")
 
 for line in all_ratings:
     lines = line.split()
@@ -169,23 +172,28 @@ for line in movie_file:
 if not movie_file.closed:
     movie_file.close()
 
+#run throug all users and calculates their average rating
+for user in list_of_users:
+    user.calculate_average_rating()
+
+
 #writer and calculates the ratings into an output file
 i = 0
 
 output = open("data.txt", "w")
-output.write("\t")
+output.write("ID, ")
 for movie in all_movies:
-    output.write(str(movie) + "   \t")
+    output.write(str(movie) + ", ")
 output.writelines("\n")
 for user in list_of_users:
     i += 1
     print(round((i / len(list_of_users)) * 100,1), "%")
-    output.write(str(user.u_id) + " \t")
+    output.write(str(user.u_id) + ", ")
     for movie in all_movies:
         if movie not in user.rated_movies:
-            output.write(str(round(user.recommend(movie),1)) + " \t")
+            output.write(str(round(user.recommend(movie),1)) + ", ")
         else:
-            output.write("0\t")
+            output.write(str(user.rated_movies[movie]) + ", ")
     output.writelines("\n")
 if not output.closed:
     output.close()
