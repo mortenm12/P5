@@ -1,23 +1,16 @@
 import time
 from ConvertOriginalToFinal import convert_original_to_final
-
-class Movie:
-    def __init__(self, id, name, date, genres):
-        self.id = id
-        self.name = name
-        self.date = date
-        self.genres = genres
-        self.actors = []
-        self.directors = []
+from DataAPI import Movie
 
 
-def read_movie_file():
-    movie_file = open("FinalData/Movies.data", "r", encoding="iso_8859_15")
+# Reads the movie file without actors and directors
+def read_movie_file(source_directory):
+    movie_file = open("../" + source_directory + "/Movies.data", "r", encoding="iso_8859_15")
     movies = []
 
     for line in movie_file:
         parts = line.split('|')
-        movies.append(Movie(parts[0], parts[1], parts[2], parts[3]))
+        movies.append(Movie(parts[0], parts[1], date=parts[2], genres=parts[3]))
 
     if not movie_file.closed:
         movie_file.close()
@@ -25,8 +18,9 @@ def read_movie_file():
     return movies
 
 
-def remake_movies_file(movies):
-    movies_file = open("FinalData/Movies.data", "w")
+# Remakes the movie file with the new actors and directors
+def remake_movies_file(movies, target_directory):
+    movies_file = open("../" + target_directory + "/Movies.data", "w")
 
     for movie in movies:
         movies_file.write(
@@ -36,6 +30,7 @@ def remake_movies_file(movies):
         movies_file.close()
 
 
+# Extracts the title of a movie from the raw string given by the IMDb data
 def extract_movie_title(movie_parts):
     j = 0
     for i in range(0, len(movie_parts)):
@@ -50,8 +45,9 @@ def extract_movie_title(movie_parts):
     return ' '.join(movie_parts)
 
 
-def write_actors_file(actors):
-    actors_file = open("FinalData/Actors.data", "w")
+# Writes the actor file
+def write_actors_file(actors, target_directory):
+    actors_file = open("../" + target_directory + "/Actors.data", "w")
 
     for i in range(0, len(actors)):
         actors_file.write(str(i) + "|" + actors[i] + "\n")
@@ -60,8 +56,9 @@ def write_actors_file(actors):
         actors_file.close()
 
 
-def write_directors_file(directors):
-    directors_file = open("FinalData/Directors.data", "w")
+# Writes the director file
+def write_directors_file(directors, target_directory):
+    directors_file = open("../" + target_directory + "/Directors.data", "w")
 
     for i in range(0, len(directors)):
         directors_file.write(str(i) + "|" + directors[i] + "\n")
@@ -70,11 +67,12 @@ def write_directors_file(directors):
         directors_file.close()
 
 
-def insert_directors(movies):
+# Reads and inserts the directors into the movie objects
+def insert_directors(movies, source_directory):
     directors = []
     a = 0
     l = 0
-    directors_file = open("OriginalData/directors.list", "r", encoding="iso_8859_15")
+    directors_file = open("../" + source_directory + "/directors.list", "r", encoding="iso_8859_15")
 
     line = directors_file.readline()
     l += 1
@@ -129,9 +127,10 @@ def insert_directors(movies):
     return movies, directors
 
 
-def insert_actors(movies, file, actors, a):
+# Reads and inserts the actors into the movie objects
+def insert_actors(movies, file, actors, a, source_directory):
     l = 0
-    actors_file = open("OriginalData/" + file, "r", encoding="iso_8859_15")
+    actors_file = open("../" + source_directory + "/" + file, "r", encoding="iso_8859_15")
 
     line = actors_file.readline()
     l += 1
@@ -191,16 +190,16 @@ def insert_actors(movies, file, actors, a):
 
     return movies, actors, a
 
-convert_original_to_final()
-movs = read_movie_file()
-time_at_start = time.clock()
-actors = []
-movs, directors = insert_directors(movs)
-movs, actors, a = insert_actors(movs, 'actors.list', actors, 0)
-movs, actors, a = insert_actors(movs, 'actresses.list', actors, a)
-write_actors_file(actors)
-write_directors_file(directors)
-time_at_end = time.clock()
-time_elapsed = time_at_end - time_at_start
-print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
-remake_movies_file(movs)
+convert_original_to_final("Test1Source", "Test1Target", "u1.test")
+#movs = read_movie_file("FinalData")
+#time_at_start = time.clock()
+#actors = []
+#movs, directors = insert_directors(movs, "OriginalData")
+#movs, actors, a = insert_actors(movs, 'actors.list', actors, 0, "OriginalData")
+#movs, actors, a = insert_actors(movs, 'actresses.list', actors, a, "OriginalData")
+#write_actors_file(actors, "FinalData")
+#write_directors_file(directors, "FinalData")
+#time_at_end = time.clock()
+#time_elapsed = time_at_end - time_at_start
+#print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
+#remake_movies_file(movs, "FinalData")
