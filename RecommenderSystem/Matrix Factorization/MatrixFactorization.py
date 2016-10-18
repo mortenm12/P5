@@ -2,18 +2,30 @@
 Implementation of Matrix Factorization by Rasmus Jensen
 """
 # Imports
-from DataAPI import read_ratings
+from DataAPI import *
 import time
 import numpy
 
 
 # Algorithm to write a matrix to a file
 def write_numpy_matrix(m, file):
-    result = open(file, "w")
+    result = open("Output/" + file, "w")
+    result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
     for i in range(0, len(m)):
-        for j in range(0, len(m[i])):
-            result.write("{: .2f} ".format(m[i][j]))
-        result.write('\n')
+        result.write("{:>4d}, ".format(i + 1))
+        result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
+        result.write("\n")
+
+    if not result.closed:
+        result.close()
+
+
+def write_factor_matrix(m, file):
+    result = open("Output/" + file, "w")
+    for i in range(0, len(m)):
+        result.write("{:>4d}, ".format(i + 1))
+        result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
+        result.write("\n")
 
     if not result.closed:
         result.close()
@@ -93,7 +105,9 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R, UDict, MDict = numpy.array(read_ratings("Test1Target"))
+    R = read_ratings(read_users_as_id_list("Test1Target"), read_movies_as_id_list("Test1Target"), "Test1Target")
+    R = numpy.array(R)
+
     K = 42
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)
@@ -108,7 +122,7 @@ def __main__():
     nR = numpy.dot(nP, nQ.T)
     write_numpy_matrix(R, "R_calculated")
     write_numpy_matrix(nR, "R_original")
-    write_numpy_matrix(nP, "P")
-    write_numpy_matrix(nQ, "Q")
+    write_factor_matrix(nP, "P")
+    write_factor_matrix(nQ, "Q")
 
 __main__()
