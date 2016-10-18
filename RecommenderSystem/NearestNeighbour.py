@@ -43,7 +43,7 @@ def find_nearest_neighbor(u_id, list_of_users):
             for movie in user.list_of_ratings:  # for every movie in the rating list
                 try:
                     if the_user.list_of_ratings[movie]:  # if the movie is in the users rating list
-                        if user.list_of_ratings[movie] == the_user.list_of_ratings[movie]:  # and the ratings are equal
+                        if user.list_of_ratings[movie] == the_user.list_of_ratings[movie]:  # and the R_calculated are equal
                             score += 1  # add 1 to the score
                 except IndexError:
                     score = score
