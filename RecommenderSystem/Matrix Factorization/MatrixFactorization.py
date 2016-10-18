@@ -2,7 +2,7 @@
 Implementation of Matrix Factorization by Rasmus Jensen
 """
 # Imports
-from DataAPI import read_users_as_id_list, read_movies_as_id_list, read_ratings
+from DataAPI import read_ratings
 import time
 import numpy
 
@@ -93,7 +93,7 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R, UDict, MDict = numpy.array(read_ratings("FinalData"))
+    R, UDict, MDict = numpy.array(read_ratings("Test1Target"))
     K = 42
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)
