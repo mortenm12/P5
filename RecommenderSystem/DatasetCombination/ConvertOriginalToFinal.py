@@ -1,3 +1,10 @@
+# Converts the original MovieLens data format to a format more suited for our algorithms
+# Genres format: id|name
+# Users format: id|age|sex|occupation|vatNumber
+# Ratings format: uid|mid|rating|timestamp
+# Movies format: id|name|date|genreIds|actorIds|directorIds
+# Actors format: id|name
+# Directors format: id|name
 def convert_original_to_final(source_directory, target_directory):
     oldGenres = open("../" + source_directory + "/u.genre", "r", encoding="iso_8859_15")
     newGenres = open("../" + target_directory + "/Genres.data", "w")

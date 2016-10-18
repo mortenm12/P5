@@ -21,7 +21,7 @@ def write_numpy_matrix(m, file):
 
 # Method to calculate the recommendations from the P and Q matrices.
 def calculate_recommendations(nP, nQ):
-    recommendation_file = open("ratings", "w")
+    recommendation_file = open("Output/UserRecommendations", "w")
 
     # For each user vector find the most similar item vector by calculating the dot products.
     a = 0
@@ -106,9 +106,9 @@ def __main__():
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "ratings")
-    write_numpy_matrix(nR, "R_matrix")
-    write_numpy_matrix(nP, "P_matrix")
-    write_numpy_matrix(nQ, "Q_matrix")
+    write_numpy_matrix(R, "R_calculated")
+    write_numpy_matrix(nR, "R_original")
+    write_numpy_matrix(nP, "P")
+    write_numpy_matrix(nQ, "Q")
 
 __main__()

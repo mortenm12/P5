@@ -108,7 +108,7 @@ def read_users_as_id_list(directory):
     return users
 
 
-# Read ratings as a user/item rating matrix
+# Read R_calculated as a user/item rating matrix
 def read_ratings(users, movies, directory):
     ratings = []
     for i in range(0, len(users)):
