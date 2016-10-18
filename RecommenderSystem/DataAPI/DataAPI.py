@@ -110,14 +110,34 @@ def read_users_as_id_list(directory):
 
 # Read ratings as a user/item rating matrix
 # Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
-def read_ratings(users, movies, directory):
+def read_test_ratings(users, movies, directory):
     ratings = []
     for i in range(0, len(users)):
         ratings.append([])
         for j in range(0, len(movies)):
             ratings[i].append(0.0)
 
-    ratings_file = open("../" + directory + "/Ratings.data", "r", encoding='iso_8859_15')
+    ratings_file = open("../" + directory + "/TestRatings.data", "r", encoding='iso_8859_15')
+    for line in ratings_file:
+        parts = line.split('|')
+        ratings[int(parts[0])][int(parts[1])] = float(parts[2])
+
+    if not ratings_file.closed:
+        ratings_file.close()
+
+    return ratings
+
+
+# Read ratings as a user/item rating matrix
+# Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
+def read_base_ratings(users, movies, directory):
+    ratings = []
+    for i in range(0, len(users)):
+        ratings.append([])
+        for j in range(0, len(movies)):
+            ratings[i].append(0.0)
+
+    ratings_file = open("../" + directory + "/BaseRatings.data", "r", encoding='iso_8859_15')
     for line in ratings_file:
         parts = line.split('|')
         ratings[int(parts[0])][int(parts[1])] = float(parts[2])

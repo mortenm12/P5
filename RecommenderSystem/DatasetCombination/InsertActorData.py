@@ -190,7 +190,7 @@ def insert_actors(movies, file, actors, a, source_directory):
 
     return movies, actors, a
 
-convert_original_to_final("Test1Source", "Test1Target", "u1.test")
+convert_original_to_final("Test1Source", "Test1Target", "u1.test", "u1.base")
 #movs = read_movie_file("FinalData")
 #time_at_start = time.clock()
 #actors = []
