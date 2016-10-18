@@ -5,7 +5,7 @@
 # Movies format: id|name|date|genreIds|actorIds|directorIds
 # Actors format: id|name
 # Directors format: id|name
-def convert_original_to_final(source_directory, target_directory):
+def convert_original_to_final(source_directory, target_directory, rating_file_name):
     oldGenres = open("../" + source_directory + "/u.genre", "r", encoding="iso_8859_15")
     newGenres = open("../" + target_directory + "/Genres.data", "w")
 
@@ -32,7 +32,7 @@ def convert_original_to_final(source_directory, target_directory):
     if not newUsers.closed:
         newUsers.close()
 
-    oldRatings = open("../" + source_directory + "/u.data", "r", encoding="iso_8859_15")
+    oldRatings = open("../" + source_directory + "/" + rating_file_name, "r", encoding="iso_8859_15")
     newRatings = open("../" + target_directory + "/Ratings.data", "w")
 
     for line in oldRatings:

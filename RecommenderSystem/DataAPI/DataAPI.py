@@ -108,21 +108,41 @@ def read_users_as_id_list(directory):
     return users
 
 
-# Read R_calculated as a user/item rating matrix
-def read_ratings(users, movies, directory):
-    ratings = []
-    for i in range(0, len(users)):
-        ratings.append([])
-        for j in range(0, len(movies)):
-            ratings[i].append(0.0)
-
+# Read ratings as a user/item rating matrix
+# Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
+def read_ratings(directory):
+    userDict = {}
+    movieDict = {}
+    ratingDict = {}
+    i = 0
+    j = 0
     ratings_file = open("../" + directory + "/Ratings.data", "r", encoding='iso_8859_15')
     for line in ratings_file:
         parts = line.split('|')
-        ratings[int(parts[0]) - 1][int(parts[1]) - 1] = float(parts[2])
+        uid = int(parts[0])
+        if uid not in userDict.values():
+            userDict[uid] = i
+            i += 1
+        mid = int(parts[1])
+        if mid not in movieDict.values():
+            movieDict[mid] = j
+            j += 1
+        rating = float(parts[2])
+        ratingDict[str(uid) + " " + str(mid)] = rating
 
     if not ratings_file.closed:
         ratings_file.close()
 
-    return ratings
+    ratings = []
+    for i in range(0, len(userDict)):
+        ratings.append([])
+        for j in range(0, len(movieDict)):
+            ratings[i].append(0.0)
 
+    for key in ratingDict:
+        parts = key.split()
+        uid = int(parts[0])
+        mid = int(parts[1])
+        ratings[userDict[uid]][movieDict[mid]] = ratingDict[key]
+
+    return ratings, userDict, movieDict

@@ -51,9 +51,9 @@ def write_results_to_files(users, head, tail):
     if not tail_file.closed:
         tail_file.close()
 
-movies = read_movies_as_object_list()
-users = read_users_as_object_list()
-ratings = read_ratings(users, movies)
+movies = read_movies_as_object_list("FinalData")
+users = read_users_as_object_list("FinalData")
+ratings = read_ratings("FinalData")
 movies = calculate_rating_amount(movies, ratings)
 head, tail = calculate_head_and_tail(movies)
 users = calculate_users_rating_habits(users, ratings, head, tail)

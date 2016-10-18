@@ -190,16 +190,16 @@ def insert_actors(movies, file, actors, a, source_directory):
 
     return movies, actors, a
 
-convert_original_to_final("OriginalData", "FinalData")
-movs = read_movie_file("FinalData")
-time_at_start = time.clock()
-actors = []
-movs, directors = insert_directors(movs, "OriginalData")
-movs, actors, a = insert_actors(movs, 'actors.list', actors, 0, "OriginalData")
-movs, actors, a = insert_actors(movs, 'actresses.list', actors, a, "OriginalData")
-write_actors_file(actors, "FinalData")
-write_directors_file(directors, "FinalData")
-time_at_end = time.clock()
-time_elapsed = time_at_end - time_at_start
-print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
-remake_movies_file(movs, "FinalData")
+convert_original_to_final("Test1Source", "Test1Target", "u1.test")
+#movs = read_movie_file("FinalData")
+#time_at_start = time.clock()
+#actors = []
+#movs, directors = insert_directors(movs, "OriginalData")
+#movs, actors, a = insert_actors(movs, 'actors.list', actors, 0, "OriginalData")
+#movs, actors, a = insert_actors(movs, 'actresses.list', actors, a, "OriginalData")
+#write_actors_file(actors, "FinalData")
+#write_directors_file(directors, "FinalData")
+#time_at_end = time.clock()
+#time_elapsed = time_at_end - time_at_start
+#print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
+#remake_movies_file(movs, "FinalData")

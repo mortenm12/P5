@@ -93,7 +93,7 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R = numpy.array(read_ratings(read_users_as_id_list("FinalData"), read_movies_as_id_list("FinalData"), "FinalData"))
+    R, UDict, MDict = numpy.array(read_ratings("FinalData"))
     K = 42
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)

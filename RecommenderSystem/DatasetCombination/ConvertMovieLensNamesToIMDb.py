@@ -26,4 +26,4 @@ def convert_names(directory):
     if not file.closed:
         file.close()
 
-convert_names("OriginalData")
+convert_names("Test1Source")
