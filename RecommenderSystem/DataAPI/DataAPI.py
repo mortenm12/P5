@@ -120,11 +120,11 @@ def read_ratings(directory):
     for line in ratings_file:
         parts = line.split('|')
         uid = int(parts[0])
-        if uid not in userDict.values():
+        if uid not in userDict.keys():
             userDict[uid] = i
             i += 1
         mid = int(parts[1])
-        if mid not in movieDict.values():
+        if mid not in movieDict.keys():
             movieDict[mid] = j
             j += 1
         rating = float(parts[2])
