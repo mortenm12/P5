@@ -1,17 +1,25 @@
 import numpy as np
-from DataAPI import DataAPI
+import numpy.ma as npm
+from DataAPI import *
 
 NRMSE = (lambda a, b: (a - b) ** 2, lambda i: sum(i) ** 0.5 / len(i))
 NMAE = (lambda a, b: abs(a - b), lambda i: sum(i) / len(i))
 
-basearrays = []
-basearrays.append(np.array(DataAPI.read_ratings("Test1Target")))
+'''
+DISCRIPTION:
+Evaluates a test- and a base-array into a single value
 
+INPUT:
+arrTest: The test-array.
+arrBase: The base-array.
+func_map(float, float, userid, movieid -> float): The function to evaluate each rating.
+func_fold(list[float] -> float): The function to map all ratings into the resulting value.
+
+OUTPUT:
+Returns the resulting value.
+'''
 def rating_evaluation(arrTest, arrBase, func_map, func_fold):
-    arrKnown = np.sign(arrBase)
-    iterAll = zip(np.nditer(arrTest), np.nditer(arrBase), np.nditer(arrKnown))
-    iterKnown = filter(lambda item: item[2] == 1, iterAll)
-    iterMapd = map(lambda item: func_map(item[0], item[1]), iterKnown)
-    return func_fold(list(iterMapd))
-
-print(rating_evaluation(basearrays[0], basearrays[0], *NMAE))
+    arrBase = npm.masked_equal(arrBase, 0)
+    vec_map = np.vectorize(func_map)
+    arrResult = vec_map(arrTest, arrBase)
+    return func_fold(arrResult.compressed())
