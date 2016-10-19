@@ -4,8 +4,8 @@ from DataAPI import Movie
 
 
 # Reads the movie file without actors and directors
-def read_movie_file(source_directory):
-    movie_file = open("../" + source_directory + "/Movies.data", "r", encoding="iso_8859_15")
+def read_movie_file():
+    movie_file = open("../FullData/Movies.data", "r", encoding="iso_8859_15")
     movies = []
 
     for line in movie_file:
@@ -19,8 +19,8 @@ def read_movie_file(source_directory):
 
 
 # Remakes the movie file with the new actors and directors
-def remake_movies_file(movies, target_directory):
-    movies_file = open("../" + target_directory + "/Movies.data", "w")
+def remake_movies_file(movies):
+    movies_file = open("../FullData/Movies.data", "w")
 
     for movie in movies:
         movies_file.write(
@@ -46,8 +46,8 @@ def extract_movie_title(movie_parts):
 
 
 # Writes the actor file
-def write_actors_file(actors, target_directory):
-    actors_file = open("../" + target_directory + "/Actors.data", "w")
+def write_actors_file(actors):
+    actors_file = open("../FullData/Actors.data", "w")
 
     for i in range(0, len(actors)):
         actors_file.write(str(i) + "|" + actors[i] + "\n")
@@ -57,8 +57,8 @@ def write_actors_file(actors, target_directory):
 
 
 # Writes the director file
-def write_directors_file(directors, target_directory):
-    directors_file = open("../" + target_directory + "/Directors.data", "w")
+def write_directors_file(directors):
+    directors_file = open("../FullData/Directors.data", "w")
 
     for i in range(0, len(directors)):
         directors_file.write(str(i) + "|" + directors[i] + "\n")
@@ -68,11 +68,11 @@ def write_directors_file(directors, target_directory):
 
 
 # Reads and inserts the directors into the movie objects
-def insert_directors(movies, source_directory):
+def insert_directors(movies):
     directors = []
     a = 0
     l = 0
-    directors_file = open("../" + source_directory + "/directors.list", "r", encoding="iso_8859_15")
+    directors_file = open("../FullDataSource/directors.list", "r", encoding="iso_8859_15")
 
     line = directors_file.readline()
     l += 1
@@ -128,9 +128,9 @@ def insert_directors(movies, source_directory):
 
 
 # Reads and inserts the actors into the movie objects
-def insert_actors(movies, file, actors, a, source_directory):
+def insert_actors(movies, file, actors, a):
     l = 0
-    actors_file = open("../" + source_directory + "/" + file, "r", encoding="iso_8859_15")
+    actors_file = open("../FullDataSource/" + file, "r", encoding="iso_8859_15")
 
     line = actors_file.readline()
     l += 1
@@ -190,16 +190,16 @@ def insert_actors(movies, file, actors, a, source_directory):
 
     return movies, actors, a
 
-convert_original_to_final("Test1Source", "Test1Target", "u1.test", "u1.base")
-#movs = read_movie_file("FinalData")
-#time_at_start = time.clock()
-#actors = []
-#movs, directors = insert_directors(movs, "OriginalData")
-#movs, actors, a = insert_actors(movs, 'actors.list', actors, 0, "OriginalData")
-#movs, actors, a = insert_actors(movs, 'actresses.list', actors, a, "OriginalData")
-#write_actors_file(actors, "FinalData")
-#write_directors_file(directors, "FinalData")
-#time_at_end = time.clock()
-#time_elapsed = time_at_end - time_at_start
-#print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
-#remake_movies_file(movs, "FinalData")
+convert_original_to_final()
+movs = read_movie_file()
+time_at_start = time.clock()
+actors = []
+movs, directors = insert_directors(movs)
+movs, actors, a = insert_actors(movs, 'actors.list', actors, 0)
+movs, actors, a = insert_actors(movs, 'actresses.list', actors, a)
+write_actors_file(actors)
+write_directors_file(directors)
+time_at_end = time.clock()
+time_elapsed = time_at_end - time_at_start
+print("Time elapsed: " + str(int(time_elapsed/60)) + ':' + str(int(time_elapsed) % 60))
+remake_movies_file(movs)

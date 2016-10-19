@@ -32,7 +32,7 @@ def write_factor_matrix(m, file):
 
 
 # Method to calculate the recommendations from the P and Q matrices.
-def calculate_recommendations(nP, nQ):
+def calculate_recommendations(nP, nQ, R):
     recommendation_file = open("Output/UserRecommendations", "w")
 
     # For each user vector find the most similar item vector by calculating the dot products.
@@ -41,10 +41,10 @@ def calculate_recommendations(nP, nQ):
     for i in range(0, len(nP)):
         for j in range(0, len(nQ)):
             result = numpy.dot(nP[i, :], nQ[j, :])
-            if result > most_accurate_product:
+            if result > most_accurate_product and R[i][j] == 0.0:
                 most_accurate_product = result
                 a = j
-        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "\n")
+        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "Rating: " + most_accurate_product + "\n")
 
     if not recommendation_file.closed:
         recommendation_file.close()
@@ -105,7 +105,7 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R = read_ratings(read_users_as_id_list("Test1Target"), read_movies_as_id_list("Test1Target"), "Test1Target")
+    R = read_test_ratings(read_users_as_id_list("Test1Target"), read_movies_as_id_list("Test1Target"), "Test1Target")
     R = numpy.array(R)
 
     K = 42
@@ -116,12 +116,12 @@ def __main__():
     nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
-    calculate_recommendations(nP, nQ)
+    calculate_recommendations(nP, nQ, R)
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "R_calculated")
-    write_numpy_matrix(nR, "R_original")
+    write_numpy_matrix(R, "R_original")
+    write_numpy_matrix(nR, "R_calculated")
     write_factor_matrix(nP, "P")
     write_factor_matrix(nQ, "Q")
 
