@@ -105,7 +105,7 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R = read_test_ratings(read_users_as_id_list("Test1Target"), read_movies_as_id_list("Test1Target"), "Test1Target")
+    R = read_ratings("Test1")
     R = numpy.array(R)
 
     K = 42

@@ -24,9 +24,9 @@ class User:
 
 
 # Read movies as a list of Movie objects with all data included
-def read_movies_as_object_list(directory):
+def read_movies_as_object_list():
     genres_dict = {}
-    genres_file = open("../" + directory + "/Genres.Data", "r", encoding='iso_8859_15')
+    genres_file = open("../FullData/Genres.Data", "r", encoding='iso_8859_15')
     for line in genres_file:
         parts = line.split('|')
         genres_dict[int(parts[0])] = parts[1]
@@ -34,7 +34,7 @@ def read_movies_as_object_list(directory):
     if not genres_file.closed:
         genres_file.close()
 
-    movies_file = open("../" + directory + "/Movies.data", "r", encoding='iso_8859_15')
+    movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = []
     for line in movies_file:
         parts = line.split('|')
@@ -53,8 +53,8 @@ def read_movies_as_object_list(directory):
 
 
 # Read movies as a list of movie ids
-def read_movies_as_id_list(directory):
-    movies_file = open("../" + directory + "/Movies.data", "r", encoding='iso_8859_15')
+def read_movies_as_id_list():
+    movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = []
     for line in movies_file:
         parts = line.split('|')
@@ -67,8 +67,8 @@ def read_movies_as_id_list(directory):
 
 
 # Read movies as a dictionary mapping ids to names
-def read_movies_as_id_name_dict(directory):
-    movies_file = open("../" + directory + "/Movies.data", "r", encoding='iso_8859_15')
+def read_movies_as_id_name_dict():
+    movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = {}
     for line in movies_file:
         parts = line.split('|')
@@ -81,8 +81,8 @@ def read_movies_as_id_name_dict(directory):
 
 
 # Read users as a list of User objects with all data included
-def read_users_as_object_list(directory):
-    users_file = open("../" + directory + "/Users.data", "r", encoding='iso_8859_15')
+def read_users_as_object_list():
+    users_file = open("../FullData/Users.data", "r", encoding='iso_8859_15')
     users = []
     for line in users_file:
         parts = line.split('|')
@@ -95,8 +95,8 @@ def read_users_as_object_list(directory):
 
 
 # Read users as a list of ids
-def read_users_as_id_list(directory):
-    users_file = open("../" + directory + "/Users.data", "r", encoding='iso_8859_15')
+def read_users_as_id_list():
+    users_file = open("../FullData/Users.data", "r", encoding='iso_8859_15')
     users = []
     for line in users_file:
         parts = line.split('|')
@@ -110,14 +110,20 @@ def read_users_as_id_list(directory):
 
 # Read ratings as a user/item rating matrix
 # Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
-def read_test_ratings(users, movies, directory):
+def read_ratings(directory):
+    users = read_users_as_id_list()
+    movies = read_movies_as_id_list()
     ratings = []
     for i in range(0, len(users)):
         ratings.append([])
         for j in range(0, len(movies)):
             ratings[i].append(0.0)
 
-    ratings_file = open("../" + directory + "/TestRatings.data", "r", encoding='iso_8859_15')
+    if directory == "FullData":
+        ratings_file = open("../" + directory + "/Ratings.data", "r", encoding='iso_8859_15')
+    else:
+        ratings_file = open("../" + directory + "/TestRatings.data", "r", encoding='iso_8859_15')
+
     for line in ratings_file:
         parts = line.split('|')
         ratings[int(parts[0])][int(parts[1])] = float(parts[2])
@@ -130,7 +136,9 @@ def read_test_ratings(users, movies, directory):
 
 # Read ratings as a user/item rating matrix
 # Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
-def read_base_ratings(users, movies, directory):
+def read_base_ratings(directory):
+    users = read_users_as_id_list()
+    movies = read_movies_as_id_list()
     ratings = []
     for i in range(0, len(users)):
         ratings.append([])
