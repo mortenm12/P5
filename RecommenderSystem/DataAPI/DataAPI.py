@@ -159,7 +159,7 @@ def read_movies_as_id_name_dict():
     movies = {}
     for line in movies_file:
         parts = line.split('|')
-        movies[parts[0]] = parts[1]
+        movies[int(parts[0])] = parts[1]
 
     if not movies_file.closed:
         movies_file.close()

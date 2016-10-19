@@ -28,19 +28,19 @@ for user in list_of_users:
 i = 0
 
 output = open("Output/data.txt", "w")
-output.write("ID, ")
+output.write("   ID, ")
 for movie in all_movies:
-    output.write(str(movie) + ", ")
+    output.write("{:>5d}".format(movie) + ", ")
 output.writelines("\n")
 for user in list_of_users:
     i += 1
     print(round((i / len(list_of_users)) * 100, 1), "%")
-    output.write(str(user.id) + ", ")
+    output.write("{:>5d}".format(user.id) + ", ")
     for movie in all_movies:
         if movie not in user.rated_movies:
-            output.write(str(round(user.recommend(movie, list_of_users), 1)) + ", ")
+            output.write("{: .2f}".format(user.recommend(movie, list_of_users)) + ", ")
         else:
-            output.write(str(user.rated_movies[movie]) + ", ")
+            output.write("{: .2f}".format(user.rated_movies[movie]) + ", ")
     output.writelines("\n")
 if not output.closed:
     output.close()
