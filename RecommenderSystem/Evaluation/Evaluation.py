@@ -3,9 +3,9 @@ import numpy.ma as npm
 from DataAPI import *
 
 #Normalized Root Mean Square Error
-NRMSE = (lambda a, b: (a - b) ** 2, lambda i: sum(i) ** 0.5 / len(i))
+NRMSE = (lambda a, b, movieid, userid: (a - b) ** 2, lambda i, movieid, userid: sum(i) ** 0.5 / len(i))
 #Normalized Mean Absolute Error
-NMAE = (lambda a, b: abs(a - b), lambda i: sum(i) / len(i))
+NMAE = (lambda a, b, movieid, userid: abs(a - b), lambda i, movieid, userid: sum(i) / len(i))
 
 #Read in base arrays
 arrsBase = []
@@ -19,17 +19,21 @@ Evaluates a test- and a base-array into a single value
 INPUT:
 arrTest: The test-array.
 arrBase: The base-array.
-func_map(float, float, userid, movieid -> float): The function to evaluate each rating.
-func_fold(list[float] -> float): The function to map all ratings into the resulting value.
+func_map(float, float -> float): The function to evaluate each rating.
+func_fold(list[(float)] -> float): The function to map all ratings into the resulting value.
 
 OUTPUT:
 Returns the resulting value.
 '''
 def rating_evaluation(arrTest, arrBase, func_map, func_fold):
+    #Arrange index arrays
+    movieids, userids = arrBase.shape()
+    arrMovies = np.arange(movieids)
+    arrUserids = np.arange(userids).T
     #Mask out invalid ratings
     arrBase = npm.masked_equal(arrBase, 0)
     #Map into combined array
     vec_map = np.vectorize(func_map)
-    arrResult = vec_map(arrTest, arrBase)
+    arrResult = vec_map(arrTest, arrBase, arrMovies, arrUserids)
     #Fold into the resulting value
-    return func_fold(arrResult.compressed())
+    return func_fold(list(np.ndenumerate(arrResult)), arrMovies, arrUserids)
