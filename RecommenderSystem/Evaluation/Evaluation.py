@@ -7,6 +7,11 @@ NRMSE = (lambda a, b: (a - b) ** 2, lambda i: sum(i) ** 0.5 / len(i))
 #Normalized Mean Absolute Error
 NMAE = (lambda a, b: abs(a - b), lambda i: sum(i) / len(i))
 
+#Read in base arrays
+arrsBase = []
+for i in range(5):
+    arrsBase.append(np.array(read_base_ratings("Test" + str(i + 1))))
+
 '''
 DISCRIPTION:
 Evaluates a test- and a base-array into a single value
@@ -28,4 +33,3 @@ def rating_evaluation(arrTest, arrBase, func_map, func_fold):
     arrResult = vec_map(arrTest, arrBase)
     #Fold into the resulting value
     return func_fold(arrResult.compressed())
-
