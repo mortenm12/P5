@@ -26,21 +26,22 @@ for user in list_of_users:
 
 # writes and calculates the ratings into an output file
 i = 0
-
-output = open("Output/data.txt", "w")
+test_set = "Test1"
+output = open("Output/" + test_set + "/ratings.data", "w")
 output.write("   ID, ")
-for movie in all_movies:
-    output.write("{:>5d}".format(movie) + ", ")
+output.write(", ".join(["{:>5d}".format(movie) for movie in all_movies]))
 output.writelines("\n")
 for user in list_of_users:
     i += 1
     print(round((i / len(list_of_users)) * 100, 1), "%")
     output.write("{:>5d}".format(user.id) + ", ")
+    j = 1
     for movie in all_movies:
         if movie not in user.rated_movies:
-            output.write("{: .2f}".format(user.recommend(movie, list_of_users)) + ", ")
+            output.write("{: .2f}".format(user.recommend(movie, list_of_users)) + (", " if j < len(all_movies) else ""))
         else:
-            output.write("{: .2f}".format(user.rated_movies[movie]) + ", ")
+            output.write("{: .2f}".format(user.rated_movies[movie]) + (", " if j < len(all_movies) else ""))
+        j += 1
     output.writelines("\n")
 if not output.closed:
     output.close()

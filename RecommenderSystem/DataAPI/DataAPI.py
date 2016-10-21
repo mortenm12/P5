@@ -196,7 +196,6 @@ def read_users_as_id_list():
 
 
 # Read ratings as a user/item rating matrix
-# Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
 def read_ratings(directory):
     users = read_users_as_id_list()
     movies = read_movies_as_id_list()
@@ -213,7 +212,7 @@ def read_ratings(directory):
 
     for line in ratings_file:
         parts = line.split('|')
-        ratings[int(parts[0])][int(parts[1])] = float(parts[2])
+        ratings[int(parts[0])-1][int(parts[1])-1] = float(parts[2])
 
     if not ratings_file.closed:
         ratings_file.close()
@@ -222,7 +221,6 @@ def read_ratings(directory):
 
 
 # Read ratings as a user/item rating matrix
-# Also outputs dictionaries mapping user and movie ids to their indexes in the matrix
 def read_base_ratings(directory):
     users = read_users_as_id_list()
     movies = read_movies_as_id_list()
@@ -235,7 +233,7 @@ def read_base_ratings(directory):
     ratings_file = open("../" + directory + "/BaseRatings.data", "r", encoding='iso_8859_15')
     for line in ratings_file:
         parts = line.split('|')
-        ratings[int(parts[0])][int(parts[1])] = float(parts[2])
+        ratings[int(parts[0])-1][int(parts[1])-1] = float(parts[2])
 
     if not ratings_file.closed:
         ratings_file.close()
@@ -254,5 +252,29 @@ def read_ratings_as_list(directory):
     for line in ratings_file:
         parts = line.split('|')
         ratings.append([int(parts[0]), int(parts[1]), int(parts[2])])
+
+    return ratings
+
+
+# Read rating matrix output from algorithms into user/item matrix
+# algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
+# test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
+def read_recommendation_matrix(algorithm, test_set):
+    file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+
+    ratings = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        if parts[0] == "ID":
+            indices = [int(x) for x in parts[1:]]
+        else:
+            ratings.insert(int(parts[0]) - 1, [])
+            j = 0
+            for rating in [float(x) for x in parts[1:]]:
+                ratings[int(parts[0]) - 1].insert(indices[j] - 1, rating)
+                j += 1
+
+    if not file.closed:
+        file.close()
 
     return ratings
