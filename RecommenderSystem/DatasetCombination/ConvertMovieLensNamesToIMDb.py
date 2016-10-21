@@ -1,7 +1,7 @@
 # Convert the names of the MovieLens data set to match the names of the IMDb data set more closely
 # Moves ", The" from the end of names to the start
-def convert_names(directory):
-    file = open("../" + directory + "/u.item", "r", encoding="ISO_8859_15")
+def convert_names():
+    file = open("../FullDataSource/u.item", "r", encoding="ISO_8859_15")
 
     movies = []
 
@@ -18,7 +18,7 @@ def convert_names(directory):
     if not file.closed:
         file.close()
 
-    file = open("../" + directory + "/u.item", "w")
+    file = open("../FullDataSource/u.item", "w")
     
     for line in movies:
         file.write(str(line))
@@ -26,4 +26,4 @@ def convert_names(directory):
     if not file.closed:
         file.close()
 
-convert_names("Test1Source")
+convert_names()
