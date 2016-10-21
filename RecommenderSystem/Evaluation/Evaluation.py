@@ -2,7 +2,9 @@ import numpy as np
 import numpy.ma as npm
 from DataAPI import *
 
+#Normalized Root Mean Square Error
 NRMSE = (lambda a, b: (a - b) ** 2, lambda i: sum(i) ** 0.5 / len(i))
+#Normalized Mean Absolute Error
 NMAE = (lambda a, b: abs(a - b), lambda i: sum(i) / len(i))
 
 '''
@@ -19,7 +21,11 @@ OUTPUT:
 Returns the resulting value.
 '''
 def rating_evaluation(arrTest, arrBase, func_map, func_fold):
+    #Mask out invalid ratings
     arrBase = npm.masked_equal(arrBase, 0)
+    #Map into combined array
     vec_map = np.vectorize(func_map)
     arrResult = vec_map(arrTest, arrBase)
+    #Fold into the resulting value
     return func_fold(arrResult.compressed())
+
