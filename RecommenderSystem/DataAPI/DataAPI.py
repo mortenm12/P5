@@ -255,4 +255,26 @@ def read_ratings_as_list(directory):
 
     return ratings
 
-read_base_ratings("Test4")
+
+# Read rating matrix output from algorithms into user/item matrix
+# algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
+# test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
+def read_recommendation_matrix(algorithm, test_set):
+    file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+
+    ratings = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        if parts[0] == "ID":
+            indices = [int(x) for x in parts[1:]]
+        else:
+            ratings.insert(int(parts[0]) - 1, [])
+            j = 0
+            for rating in [float(x) for x in parts[1:]]:
+                ratings[int(parts[0]) - 1].insert(indices[j] - 1, rating)
+                j += 1
+
+    if not file.closed:
+        file.close()
+
+    return ratings

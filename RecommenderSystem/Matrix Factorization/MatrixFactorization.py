@@ -8,8 +8,8 @@ import numpy
 
 
 # Algorithm to write a matrix to a file
-def write_numpy_matrix(m, file):
-    result = open("Output/" + file, "w")
+def write_numpy_matrix(m, file, test_set):
+    result = open("Output/" + test_set + "/" + file, "w")
     result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
     for i in range(0, len(m)):
         result.write("{:>4d}, ".format(i + 1))
@@ -20,8 +20,8 @@ def write_numpy_matrix(m, file):
         result.close()
 
 
-def write_factor_matrix(m, file):
-    result = open("Output/" + file, "w")
+def write_factor_matrix(m, file, test_set):
+    result = open("Output/" + test_set + "/" + file, "w")
     for i in range(0, len(m)):
         result.write("{:>4d}, ".format(i + 1))
         result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
@@ -32,8 +32,8 @@ def write_factor_matrix(m, file):
 
 
 # Method to calculate the recommendations from the P and Q matrices.
-def calculate_recommendations(nP, nQ, R):
-    recommendation_file = open("Output/UserRecommendations", "w")
+def calculate_recommendations(nP, nQ, R, test_set):
+    recommendation_file = open("Output/" + test_set + "/UserRecommendations", "w")
 
     # For each user vector find the most similar item vector by calculating the dot products.
     a = 0
@@ -116,13 +116,13 @@ def __main__():
     nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
-    calculate_recommendations(nP, nQ, R)
+    calculate_recommendations(nP, nQ, R, "Test1")
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "R_original")
-    write_numpy_matrix(nR, "R_calculated")
-    write_factor_matrix(nP, "P")
-    write_factor_matrix(nQ, "Q")
+    write_numpy_matrix(R, "R_original", "Test1")
+    write_numpy_matrix(nR, "ratings.data", "Test1")
+    write_factor_matrix(nP, "P", "Test1")
+    write_factor_matrix(nQ, "Q", "Test1")
 
 __main__()
