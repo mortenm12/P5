@@ -45,7 +45,7 @@ def weight(mId1, mId2, ratings, userdict):
     return cos(userratings[0], userratings[1])
 
 
-def knn (mid1, uid, k, userdict, moviedict, ratings):
+def knn(mid1, uid, k, userdict, moviedict, ratings):
     weightandrating = []
     for mid2 in range(len(moviedict)):
         if mid2 != mid1 and ratings[uid][mid2] != 0.0:
@@ -54,23 +54,29 @@ def knn (mid1, uid, k, userdict, moviedict, ratings):
     sortedarray = sorted(weightandrating, key=lambda x: x[0])
     return sortedarray[-k:]
 
-def rate (mid, uid, userdict, moviedict, ratings):
+
+def rate(mid, uid, userdict, moviedict, ratings):
     knearesteneighour = knn(mid, uid, 5, userdict, moviedict, ratings)
     sum1 = 0
     sum2 = 0
     for x in knearesteneighour:
         sum1 += x[0] * x[1]
         sum2 += x[0]
-
-    return sum1/sum2
+    if sum2 != 0:
+        return sum1/sum2
+    else:
+        return sum1
 
 i = 0
+rated = ratings
 for user in range(len(userDict)):
     i += 1
     print(round((i / len(userDict)) * 100, 1), "%")
+
     for movie in range(len(movieDict)):
         if ratings[user][movie] == 0.0:
-            ratings[user][movie] = rate(movie, user, userDict, movieDict, ratings)
+            rated[user][movie] = +(rate(movie, user, userDict, movieDict, ratings))
+
 
 output = open("output.data", "w")
 output.write("   ID, ")
@@ -85,7 +91,7 @@ for user in range(len(userDict)):
     print(round((i / len(userDict)) * 100, 1), "%")
     output.write("{:>5}".format(user) + ", ")
     for movie in range(len(movieDict)):
-        output.write("{: .2f}".format(ratings[user][movie]) + " ,")
+        output.write("{: .2f}".format(rated[user][movie]) + ", ")
 
     output.write("\n")
 
