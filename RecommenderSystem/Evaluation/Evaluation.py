@@ -2,16 +2,6 @@ import numpy as np
 import numpy.ma as npm
 from DataAPI import *
 
-#Normalized Root Mean Square Error
-NRMSE = (lambda a, b, movieid, userid: (a - b) ** 2, lambda i, movieid, userid: sum(i) ** 0.5 / len(i))
-#Normalized Mean Absolute Error
-NMAE = (lambda a, b, movieid, userid: abs(a - b), lambda i, movieid, userid: sum(i) / len(i))
-
-#Read in base arrays
-arrsBase = []
-for i in range(5):
-    arrsBase.append(np.array(read_base_ratings("Test" + str(i + 1))))
-
 '''
 DISCRIPTION:
 Evaluates a test- and a base-array into a single value
@@ -26,14 +16,49 @@ OUTPUT:
 Returns the resulting value.
 '''
 def rating_evaluation(arrTest, arrBase, func_map, func_fold):
-    #Arrange index arrays
-    movieids, userids = arrBase.shape()
-    arrMovies = np.arange(movieids)
-    arrUserids = np.arange(userids).T
     #Mask out invalid ratings
     arrBase = npm.masked_equal(arrBase, 0)
     #Map into combined array
     vec_map = np.vectorize(func_map)
-    arrResult = vec_map(arrTest, arrBase, arrMovies, arrUserids)
+    arrResult = vec_map(arrTest, arrBase)
     #Fold into the resulting value
-    return func_fold(list(np.ndenumerate(arrResult)), arrMovies, arrUserids)
+    return func_fold(arrResult)
+
+ratingAlgorithms = ["Matrix Factorization", "NearestNeighbour"]
+evaluationAlgorithms = {}
+
+#Normalized Root Mean Square Error
+evaluationAlgorithms["NRMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
+#Normalized Mean Absolute Error
+evaluationAlgorithms["NMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
+#Per-User Normalized Mean Absolute Error
+evaluationAlgorithms["UNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr,0)))
+#Per-Movie Normalized Mean Absolute Error
+evaluationAlgorithms["MNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr,1)))
+
+
+dictArrs = {}
+
+#Read in base arrays
+dictArrs["Base"] = []
+for i in range(1,2):
+    dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i))))
+
+#Read in recommendation arrays
+for algo in ratingAlgorithms:
+    dictArrs[algo] = []
+    for i in range(1,2):
+        dictArrs[algo].append(np.array(read_recommendation_matrix(algo, "Test" + str(i))))
+
+#Evaluate algorithms
+dictResults = {}
+
+for rAlgo in ratingAlgorithms:
+    dictResults[rAlgo] = []
+    for i in range(1):
+        results = {}
+        for eAlgo in evaluationAlgorithms.keys():
+            results[eAlgo] = rating_evaluation(dictArrs[rAlgo][i], dictArrs["Base"][i], *evaluationAlgorithms[eAlgo])
+        dictResults[rAlgo].append(results)
+
+print(dictResults)
