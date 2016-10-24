@@ -85,19 +85,16 @@ i = 0
 rated = ratings
 for user in range(len(userDict)):
     i += 1
-<<<<<<< Updated upstream
-    print(round((i / len(userDict)) * 100, 1), "%")
 
-=======
     tidnu = time.time()
     tidbrugt = tidnu - tidstart
-    tidtilbage = tidbrugt / (i / len(userDict))
+    tidtilbage = ((tidbrugt * len(userDict)) / i) - tidbrugt
 
     print(round((i / len(userDict)) * 100, 1), "% tid brugt: ", totime(tidbrugt), " tid tilbage: ", totime(tidtilbage) )
->>>>>>> Stashed changes
+
     for movie in range(len(movieDict)):
         if ratings[user][movie] == 0.0:
-            rated[user][movie] = +(rate(movie, user, userDict, movieDict, ratings))
+            rated[user][movie] = (rate(movie, user, userDict, movieDict, ratings))
 
 
 output = open("output.data", "w")
@@ -119,20 +116,3 @@ for user in range(len(userDict)):
 
 if not output.closed:
     output.close()
-
-
-
-def totime(time):
-    if time < 1:
-        return "0:0:0"
-    else:
-        h = time / 3600
-        m = (time - (h * 3600)) / 60
-        s = time % 60
-        return str(h) + ":" + str(m) + ":" + str(s)
-
-
-
-
-
-
