@@ -4,6 +4,8 @@ Morten Meyer Rasmussen
 Every page numbers is a reference to the book: Recommender Systems Handbook
 """
 from DataAPI import *
+from AuxillaryMath import *
+import time
 
 
 # user2 is a user who is not the user self
@@ -76,6 +78,16 @@ def recommend(user1, movie, list_of_users):  # page 115
     else:
         return (sum1 / sum2) + mean_center(user1, movie, list_of_users)
 
+def format_time(t):
+    if t < 1:
+        return "00:00:00"
+    else:
+        t_int = int(t)
+        h = t_int / 3600
+        h_rest = t_int % 3600
+        m = h_rest / 60
+        s = h_rest % 60
+        return "{:02d}".format(int(h)) + ":" + "{:02d}".format(int(m)) + ":" + "{:02d}".format(int(s))
 
 # loader user data into the list_of_user
 list_of_users = read_users_as_object_list()
@@ -96,6 +108,30 @@ for user in list_of_users:
     user.calculate_average_rating()
 
 
+rating_matrix = []
+for i in range(0, len(list_of_users)):
+    rating_matrix.append([])
+    for j in range(0, len(all_movies)):
+        rating_matrix[i].append(0.0)
+
+i = 0
+starting_time = time.time()
+for user in list_of_users:
+    i += 1
+
+    current_time = time.time()
+    elapsed_time = current_time - starting_time
+    remaining_time = ((elapsed_time * len(list_of_users)) / i) - elapsed_time
+
+    print(round((i / len(list_of_users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+    for movie in all_movies:
+        if movie not in user.rated_movies:
+            rating_matrix[user.id-1][int(movie)-1] = recommend(user, movie, list_of_users)
+        else:
+            rating_matrix[user.id][int(movie)] = user.rated_movies[movie]
+
+
+
 # writes and calculates the ratings into an output file
 i = 0
 test_set = "Test1"
@@ -103,16 +139,14 @@ output = open("Output/" + test_set + "/ratings.data", "w")
 output.write("   ID, ")
 output.write(", ".join(["{:>5d}".format(movie) for movie in all_movies]))
 output.writelines("\n")
-for user in list_of_users:
+for user in range(0, len(list_of_users)):
     i += 1
     print(round((i / len(list_of_users)) * 100, 1), "%")
-    output.write("{:>5d}".format(user.id) + ", ")
+    output.write("{:>5d}".format(list_of_users[user].id) + ", ")
     j = 1
-    for movie in all_movies:
-        if movie not in user.rated_movies:
-            output.write("{: .2f}".format(recommend(user, movie, list_of_users)) + (", " if j < len(all_movies) else ""))
-        else:
-            output.write("{: .2f}".format(user.rated_movies[movie]) + (", " if j < len(all_movies) else ""))
+    for movie in range(0, len(all_movies)):
+        output.write("{: .2f}".format(rating_matrix[user][movie]) + (", " if j < len(all_movies) else ""))
+
         j += 1
     output.writelines("\n")
 if not output.closed:
