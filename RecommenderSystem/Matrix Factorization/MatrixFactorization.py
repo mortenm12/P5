@@ -103,6 +103,18 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
     return P, Q.T
 
 
+def calculate_k_recommendations(user, k, test_set):
+    P, Q = read_factor_matrices(test_set)
+    P = numpy.array(P)
+    Q = numpy.array(Q)
+
+    ratings = []
+    for i in range(len(Q)):
+        ratings.append([i + 1, numpy.dot(P[user, :], Q[i, :])])
+
+    return sorted(ratings, key=lambda x: x[1], reverse=True)[:k]
+
+
 def __main__():
     # Initialize matrices and values.
     R = read_ratings("Test1")
@@ -120,9 +132,15 @@ def __main__():
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "R_original", "Test1")
+    write_numpy_matrix(R, "R_original.data", "Test1")
     write_numpy_matrix(nR, "ratings.data", "Test1")
-    write_factor_matrix(nP, "P", "Test1")
-    write_factor_matrix(nQ, "Q", "Test1")
+    write_factor_matrix(nP, "P.data", "Test1")
+    write_factor_matrix(nQ, "Q.data", "Test1")
 
-__main__()
+user = 1
+k = 10
+rats = calculate_k_recommendations(1, 10, "Test1")
+
+print("For user: " + str(user))
+for rat in rats:
+    print("Movies: " + str(rat[0]) + " Rating: " + str(rat[1]))

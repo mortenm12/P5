@@ -278,3 +278,36 @@ def read_recommendation_matrix(algorithm, test_set):
         file.close()
 
     return ratings
+
+
+# Read the P and Q matrices output by the Matrix Factorization algorithm.
+def read_factor_matrices(test_set):
+    file = open("../Matrix Factorization/Output/" + test_set + "/P.data", "r")
+
+    P = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        P.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            P[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    file = open("../Matrix Factorization/Output/" + test_set + "/Q.data", "r")
+
+    Q = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        Q.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            Q[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    return P, Q
