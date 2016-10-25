@@ -2,47 +2,38 @@
 Implementation of Matrix Factorization by Rasmus Jensen
 """
 # Imports
-from MatrixGeneration import *
+from DataAPI import *
 import time
 import numpy
-import math
-
-
-# Calculate expected ratings and print ratings matrix.
-def calculate_result_matrix(P, Q, R):
-    list = []
-    for i in range(0, len(P)):
-        list.append([])
-        print(str(i) + ' ' + time.asctime(time.localtime(time.time())))
-        for j in range(0, len(Q)):
-            result = math.cos(numpy.dot(P[i, :], Q[j, :]))
-            if not R[i][j] > 0:
-                list[i].append(result)
-            else:
-                list[i].append(2.0)
-
-    recommendation_file = open("Recommendations.data", "w")
-    for i in range(0, len(list)):
-        recommendation_file.write(' '.join("{: .2f}".format(x * 2 + 3) if x != 2.0 else ' -  ' for x in list[i]) + '\n')
-    if not recommendation_file.closed:
-        recommendation_file.close()
 
 
 # Algorithm to write a matrix to a file
-def write_numpy_matrix(m, file):
-    result = open(file, "w")
+def write_numpy_matrix(m, file, test_set):
+    result = open("Output/" + test_set + "/" + file, "w")
+    result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
     for i in range(0, len(m)):
-        for j in range(0, len(m[i])):
-            result.write("{: .2f} ".format(m[i][j]))
-        result.write('\n')
+        result.write("{:>4d}, ".format(i + 1))
+        result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
+        result.write("\n")
+
+    if not result.closed:
+        result.close()
+
+
+def write_factor_matrix(m, file, test_set):
+    result = open("Output/" + test_set + "/" + file, "w")
+    for i in range(0, len(m)):
+        result.write("{:>4d}, ".format(i + 1))
+        result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
+        result.write("\n")
 
     if not result.closed:
         result.close()
 
 
 # Method to calculate the recommendations from the P and Q matrices.
-def calculate_recommendations(nP, nQ):
-    recommendation_file = open("Recommendations.data", "w")
+def calculate_recommendations(nP, nQ, R, test_set):
+    recommendation_file = open("Output/" + test_set + "/UserRecommendations", "w")
 
     # For each user vector find the most similar item vector by calculating the dot products.
     a = 0
@@ -50,10 +41,10 @@ def calculate_recommendations(nP, nQ):
     for i in range(0, len(nP)):
         for j in range(0, len(nQ)):
             result = numpy.dot(nP[i, :], nQ[j, :])
-            if result > most_accurate_product:
+            if result > most_accurate_product and R[i][j] == 0.0:
                 most_accurate_product = result
                 a = j
-        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "\n")
+        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "Rating: " + most_accurate_product + "\n")
 
     if not recommendation_file.closed:
         recommendation_file.close()
@@ -114,7 +105,9 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 def __main__():
     # Initialize matrices and values.
-    R = generate_matrix(read_users(), read_movies())
+    R = read_ratings("Test1")
+    R = numpy.array(R)
+
     K = 42
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)
@@ -123,16 +116,13 @@ def __main__():
     nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
-    calculate_recommendations(nP, nQ)
+    calculate_recommendations(nP, nQ, R, "Test1")
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "ratings")
-    write_numpy_matrix(nR, "R_matrix")
-    write_numpy_matrix(nP, "P_matrix")
-    write_numpy_matrix(nQ, "Q_matrix")
-
-    # Calculate the predicted rating matrix
-    calculate_result_matrix(nP, nQ, R)
+    write_numpy_matrix(R, "R_original", "Test1")
+    write_numpy_matrix(nR, "ratings.data", "Test1")
+    write_factor_matrix(nP, "P", "Test1")
+    write_factor_matrix(nQ, "Q", "Test1")
 
 __main__()

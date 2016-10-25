@@ -1,1 +1,6 @@
-*.pyc
+*.xml
+*.iml
+RecommenderSystem/OriginalData/u.user
+RecommenderSystem/OriginalData/u.item
+RecommenderSystem/OriginalData/u.data
+RecommenderSystem/OriginalData/u.genre
