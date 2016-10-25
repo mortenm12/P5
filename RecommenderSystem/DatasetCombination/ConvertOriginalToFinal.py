@@ -46,7 +46,7 @@ def convert_ratings(source_directory, target_directory, test_rating_file_name, b
         newRatings.close()
 
     if base_rating_file_name != "":
-        oldRatings = open("../" + source_directory + "/" + test_rating_file_name, "r", encoding="iso_8859_15")
+        oldRatings = open("../" + source_directory + "/" + base_rating_file_name, "r", encoding="iso_8859_15")
         newRatings = open("../" + target_directory + "/BaseRatings.data", "w")
 
         for line in oldRatings:
@@ -90,9 +90,9 @@ def convert_movies():
 # Actors format: id|name
 # Directors format: id|name
 def convert_original_to_final():
-    convert_genres()
-    convert_users()
-    convert_movies()
+#    convert_genres()
+#    convert_users()
+#    convert_movies()
     convert_ratings("FullDataSource", "FullData", "u.data")
     convert_ratings("FullDataSource", "Test1", "u1.test", "u1.base")
     convert_ratings("FullDataSource", "Test2", "u2.test", "u2.base")
@@ -100,3 +100,4 @@ def convert_original_to_final():
     convert_ratings("FullDataSource", "Test4", "u4.test", "u4.base")
     convert_ratings("FullDataSource", "Test5", "u5.test", "u5.base")
 
+convert_original_to_final()
