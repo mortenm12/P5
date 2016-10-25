@@ -2,10 +2,10 @@ import DataAPI
 import math
 import time
 
-directory = "Test1Target"
+directory = "Test1"
 
-users = DataAPI.read_users_as_id_list(directory)
-movies = DataAPI.read_movies_as_id_list(directory)
+users = DataAPI.read_users_as_id_list()
+movies = DataAPI.read_movies_as_id_list()
 ratings = DataAPI.read_ratings(directory)
 
 
@@ -28,7 +28,7 @@ def length(vector):
     sum = 0
 
     for i in range(len(vector)):
-        sum += vector[i] ** 2
+        sum += math.pow(vector[i], 2)
 
     return math.sqrt(sum)
 
@@ -44,18 +44,18 @@ def weight(movie1, movie2, ratings, users):
     return cos(user_ratings[0], user_ratings[1])
 
 
-def k_nearest_neighbour(movie1, user, k, ratings, movies, users):
+def k_nearest_neighbour(movie1, user, k, ratings, movies, weight_matrix):
     weight_rating_tuples = []
     for movie2 in movies:
         if movie2 != movie1 and ratings[user - 1][movie2 - 1] != 0.0:
-            weight_rating_tuples.append([weight(movie1, movie2, ratings, users), ratings[user - 1][movie2 - 1]])
+            weight_rating_tuples.append([weight_matrix[movie1 - 1][movie2 - 1], ratings[user - 1][movie2 - 1]])
 
     sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
     return sorted_array[-k:]
 
 
-def rate(movie, user, users, movies, ratings):
-    weight_rating_tuples = k_nearest_neighbour(movie, user, 5, ratings, movies, users)
+def rate(movie, user, movies, ratings, weight_matrix):
+    weight_rating_tuples = k_nearest_neighbour(movie, user, 5, ratings, movies, weight_matrix)
     sum1 = 0
     sum2 = 0
     for x in weight_rating_tuples:
@@ -67,20 +67,42 @@ def rate(movie, user, users, movies, ratings):
         return sum1
 
 
-def format_time(time):
-    if time < 1:
-        return "0:0:0"
+def format_time(t):
+    if t < 1:
+        return "00:00:00"
     else:
-        h = round(time / 3600)
-        m = round((time - (h * 3600)) / 60)
-        s = round(time % 60)
-        return str(h) + ":" + str(m) + ":" + str(s)
+        t_int = int(t)
+        h = t_int / 3600
+        h_rest = t_int % 3600
+        m = h_rest / 60
+        s = h_rest % 60
+        return "{:02d}".format(int(h)) + ":" + "{:02d}".format(int(m)) + ":" + "{:02d}".format(int(s))
 
 
-starting_time = time.time()
+def calculate_weight_matrix(movies, ratings, users):
+    t_start = time.time()
+    weight_matrix = []
+    for i in range(len(movies)):
+        weight_matrix.append([])
+        for j in range(len(movies)):
+            weight_matrix[i].append(0)
+
+    for movie1 in movies:
+        t_current = time.time()
+        t_elapsed = t_current - t_start
+        t_remaining = (t_elapsed * len(movies)) / movie1 - t_elapsed
+        print(round((movie1 / len(movies)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+              format_time(t_remaining))
+        for movie2 in movies:
+            if movie1 != movie2:
+                weight_matrix[movie1 - 1][movie2 - 1] = weight(movie1, movie2, ratings, users)
+
+    return weight_matrix
 
 i = 0
 rated = ratings
+weight_matrix = calculate_weight_matrix(movies, ratings, users)
+starting_time = time.time()
 for user in users:
     i += 1
 
@@ -92,7 +114,7 @@ for user in users:
 
     for movie in movies:
         if ratings[user - 1][movie - 1] == 0.0:
-            rated[user - 1][movie - 1] = (rate(movie, user, users, movies, ratings))
+            rated[user - 1][movie - 1] = (rate(movie, user, movies, ratings, weight_matrix))
 
 
 output = open("output.data", "w")
