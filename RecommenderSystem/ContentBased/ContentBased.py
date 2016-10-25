@@ -4,63 +4,61 @@ import time
 
 directory = "Test1Target"
 
-userDict = {}
-movieDict = {}
-ratings = []
-
-ratings, userDict, movieDict = DataAPI.read_ratings(directory)
+users = DataAPI.read_users_as_id_list(directory)
+movies = DataAPI.read_movies_as_id_list(directory)
+ratings = DataAPI.read_ratings(directory)
 
 
 def cos(a, b):
-    sum1 = 0
+    sum = 0
 
     if len(a) == len(b):
         for i in range(len(a)):
-            sum1 += a[i] * b[i]
+            sum += a[i] * b[i]
     else:
-        raise Exception("a and b must be of the same lenght")
+        raise Exception("a and b must be of the same length")
 
     if len(a) != 0:
-        return sum1 / (length(a) * length(b))
+        return sum / (length(a) * length(b))
     else:
         return 0
 
 
-def length(v):
-    sum1 = 0
+def length(vector):
+    sum = 0
 
-    for i in range(len(v)):
-        sum1 += v[i] ** 2
+    for i in range(len(vector)):
+        sum += vector[i] ** 2
 
-    return math.sqrt(sum1)
-
-
-def weight(mId1, mId2, ratings, userdict):
-    userratings = [[],[]]
-
-    for uId in range(len(userdict)):
-        if ratings[uId][mId1] != 0.0 and ratings[uId][mId2] != 0.0:
-            userratings[0].append(ratings[uId][mId1])
-            userratings[1].append(ratings[uId][mId2])
-
-    return cos(userratings[0], userratings[1])
+    return math.sqrt(sum)
 
 
-def knn(mid1, uid, k, userdict, moviedict, ratings):
-    weightandrating = []
-    for mid2 in range(len(moviedict)):
-        if mid2 != mid1 and ratings[uid][mid2] != 0.0:
-            weightandrating.append([weight(mid1, mid2, ratings, userdict), ratings[uid][mid2]])
+def weight(movie1, movie2, ratings, users):
+    user_ratings = [[],[]]
 
-    sortedarray = sorted(weightandrating, key=lambda x: x[0])
-    return sortedarray[-k:]
+    for user in users:
+        if ratings[user - 1][movie1 - 1] != 0.0 and ratings[user - 1][movie2 - 1] != 0.0:
+            user_ratings[0].append(ratings[user - 1][movie1 - 1])
+            user_ratings[1].append(ratings[user - 1][movie2 - 1])
+
+    return cos(user_ratings[0], user_ratings[1])
 
 
-def rate(mid, uid, userdict, moviedict, ratings):
-    knearesteneighour = knn(mid, uid, 5, userdict, moviedict, ratings)
+def k_nearest_neighbour(movie1, user, k, ratings, movies, users):
+    weight_rating_tuples = []
+    for movie2 in movies:
+        if movie2 != movie1 and ratings[user - 1][movie2 - 1] != 0.0:
+            weight_rating_tuples.append([weight(movie1, movie2, ratings, users), ratings[user - 1][movie2 - 1]])
+
+    sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
+    return sorted_array[-k:]
+
+
+def rate(movie, user, users, movies, ratings):
+    weight_rating_tuples = k_nearest_neighbour(movie, user, 5, ratings, movies, users)
     sum1 = 0
     sum2 = 0
-    for x in knearesteneighour:
+    for x in weight_rating_tuples:
         sum1 += x[0] * x[1]
         sum2 += x[0]
     if sum2 != 0:
@@ -69,7 +67,7 @@ def rate(mid, uid, userdict, moviedict, ratings):
         return sum1
 
 
-def totime(time):
+def format_time(time):
     if time < 1:
         return "0:0:0"
     else:
@@ -79,38 +77,38 @@ def totime(time):
         return str(h) + ":" + str(m) + ":" + str(s)
 
 
-tidstart = time.time()
+starting_time = time.time()
 
 i = 0
 rated = ratings
-for user in range(len(userDict)):
+for user in users:
     i += 1
 
-    tidnu = time.time()
-    tidbrugt = tidnu - tidstart
-    tidtilbage = ((tidbrugt * len(userDict)) / i) - tidbrugt
+    current_time = time.time()
+    elapsed_time = current_time - starting_time
+    remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-    print(round((i / len(userDict)) * 100, 1), "% tid brugt: ", totime(tidbrugt), " tid tilbage: ", totime(tidtilbage) )
+    print(round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
 
-    for movie in range(len(movieDict)):
-        if ratings[user][movie] == 0.0:
-            rated[user][movie] = (rate(movie, user, userDict, movieDict, ratings))
+    for movie in movies:
+        if ratings[user - 1][movie - 1] == 0.0:
+            rated[user - 1][movie - 1] = (rate(movie, user, users, movies, ratings))
 
 
 output = open("output.data", "w")
 output.write("   ID, ")
-for movie in range(len(movieDict)):
+for movie in movies:
     output.write("{:>5}".format(movie) + ", ")
 
 i = 0
 output.write("\n")
 
-for user in range(len(userDict)):
+for user in users:
     i += 1
-    print(round((i / len(userDict)) * 100, 1), "%")
+    print(round((i / len(users)) * 100, 1), "%")
     output.write("{:>5}".format(user) + ", ")
-    for movie in range(len(movieDict)):
-        output.write("{: .2f}".format(rated[user][movie]) + ", ")
+    for movie in movies:
+        output.write("{: .2f}".format(rated[user - 1][movie - 1]) + ", ")
 
     output.write("\n")
 
