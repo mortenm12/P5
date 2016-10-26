@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import numpy.ma as npm
 from DataAPI import *
@@ -26,6 +27,8 @@ def rating_evaluation(arrTest, arrBase, func_map, func_fold):
     return func_fold(arrResult)
 
 ratingAlgorithms = ["Matrix Factorization", "NearestNeighbour"]
+numTests = 1
+
 evaluationAlgorithms = {}
 
 #Normalized Root Mean Square Error
@@ -42,13 +45,13 @@ dictArrs = {}
 
 #Read in base arrays
 dictArrs["Base"] = []
-for i in range(1,2):
+for i in range(1, numTests + 1):
     dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i)), np.float))
 
 #Read in recommendation arrays
 for algo in ratingAlgorithms:
     dictArrs[algo] = []
-    for i in range(1,2):
+    for i in range(1, numTests + 1):
         dictArrs[algo].append(np.array(read_recommendation_matrix(algo, "Test" + str(i)), np.float))
 
 #Evaluate algorithms
@@ -56,10 +59,38 @@ dictResults = {}
 
 for rAlgo in ratingAlgorithms:
     dictResults[rAlgo] = []
-    for i in range(1):
+    for i in range(numTests):
         results = {}
         for eAlgo in evaluationAlgorithms.keys():
             results[eAlgo] = rating_evaluation(dictArrs[rAlgo][i], dictArrs["Base"][i], *evaluationAlgorithms[eAlgo])
         dictResults[rAlgo].append(results)
 
-print(dictResults)
+def FormatResults(strDescription):
+    output = ""
+    output += time.ctime()
+    output += "\nDescription: "
+    output += strDescription
+    output += "\n"
+    for rAlgo in ratingAlgorithms:
+        output += "\n"
+        output += rAlgo
+        output += "\n---\n"
+        for eAlgo in evaluationAlgorithms.keys():
+            output += eAlgo
+            output += ":\n"
+            for i in range(numTests):
+                output += str(i + 1)
+                output += ". "
+                output += str(dictResults[rAlgo][i][eAlgo])
+                output += "\n"
+        output += "---\n"
+    output += "\n"
+    return output
+
+def LogResults():
+    logfile = open("EvaluationLog.txt", "a")
+    logfile.write(FormatResults(input("Evaluation Description:\n")))
+    if not logfile.closed:
+        logfile.close()
+
+LogResults()
