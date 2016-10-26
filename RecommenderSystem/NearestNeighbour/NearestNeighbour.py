@@ -130,9 +130,15 @@ for user in list_of_users:
         else:
             rating_matrix[user.id][int(movie)] = user.rated_movies[movie]
 
+for i in range(0, len(list_of_users)):
+    for j in range(0, len(all_movies)):
+        if rating_matrix[i][j] > 5:
+            rating_matrix[i][j] = 5
+        elif rating_matrix[i][j] < 1:
+            rating_matrix[i][j] = 1
 
 
-# writes and calculates the ratings into an output file
+# writes the ratings into an output file
 i = 0
 test_set = "Test1"
 output = open("Output/" + test_set + "/ratings.data", "w")
