@@ -130,7 +130,7 @@ for user in users:
     print(round((i / len(users)) * 100, 1), "%")
     output.write("{:>5}".format(user) + ", ")
     for movie in movies:
-        output.write("{: .2f}".format(rated[user - 1][movie - 1]) + ", ")
+        output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
 
     output.write("\n")
 
