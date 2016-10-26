@@ -135,7 +135,7 @@ for i in range(0, len(list_of_users)):
         if rating_matrix[i][j] > 5:
             rating_matrix[i][j] = 5
         elif rating_matrix[i][j] < 1:
-            rating_matrix[i][j] = 1
+            rating_matrix[i][j] = 3
 
 
 # writes the ratings into an output file
