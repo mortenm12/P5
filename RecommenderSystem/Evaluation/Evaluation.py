@@ -15,6 +15,7 @@ func_fold(list[(float)] -> float): The function to map all ratings into the resu
 OUTPUT:
 Returns the resulting value.
 '''
+
 def rating_evaluation(arrTest, arrBase, func_map, func_fold):
     #Mask out invalid ratings
     arrBase = npm.masked_equal(arrBase, 0)
@@ -42,13 +43,13 @@ dictArrs = {}
 #Read in base arrays
 dictArrs["Base"] = []
 for i in range(1,2):
-    dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i))))
+    dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i)), np.float))
 
 #Read in recommendation arrays
 for algo in ratingAlgorithms:
     dictArrs[algo] = []
     for i in range(1,2):
-        dictArrs[algo].append(np.array(read_recommendation_matrix(algo, "Test" + str(i))))
+        dictArrs[algo].append(np.array(read_recommendation_matrix(algo, "Test" + str(i)), np.float))
 
 #Evaluate algorithms
 dictResults = {}
