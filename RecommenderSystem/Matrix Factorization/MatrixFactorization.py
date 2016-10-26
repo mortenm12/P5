@@ -104,20 +104,35 @@ def matrix_factorization(R, P, Q, K, steps=100, alpha=0.0002, beta=0.02):
 
 
 def calculate_k_recommendations(user, k, test_set):
+    R = read_ratings(test_set)
     P, Q = read_factor_matrices(test_set)
     P = numpy.array(P)
     Q = numpy.array(Q)
 
     ratings = []
     for i in range(len(Q)):
-        ratings.append([i + 1, numpy.dot(P[user, :], Q[i, :])])
+        if R[user - 1][i] == 0.0:
+            ratings.append([i + 1, numpy.dot(P[user, :], Q[i, :])])
 
     return sorted(ratings, key=lambda x: x[1], reverse=True)[:k]
 
 
-def __main__():
+def bound_results(test_set):
+    P, Q = read_factor_matrices(test_set)
+    R = numpy.dot(numpy.array(P), numpy.array(Q).T)
+    for i in range(len(R)):
+        for j in range(len(R[0])):
+            if R[i, j] > 5:
+                R[i, j] = 5
+            elif R[i, j] < 1:
+                R[i, j] = 1
+
+    write_numpy_matrix(R, "bounded_ratings.data", test_set)
+
+
+def __main__(test_set):
     # Initialize matrices and values.
-    R = read_ratings("Test1")
+    R = read_ratings(test_set)
     R = numpy.array(R)
 
     K = 42
@@ -128,19 +143,13 @@ def __main__():
     nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
-    calculate_recommendations(nP, nQ, R, "Test1")
+    calculate_recommendations(nP, nQ, R, test_set)
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
-    write_numpy_matrix(R, "R_original.data", "Test1")
-    write_numpy_matrix(nR, "ratings.data", "Test1")
-    write_factor_matrix(nP, "P.data", "Test1")
-    write_factor_matrix(nQ, "Q.data", "Test1")
+    write_numpy_matrix(R, "R_original.data", test_set)
+    write_numpy_matrix(nR, "ratings.data", test_set)
+    write_factor_matrix(nP, "P.data", test_set)
+    write_factor_matrix(nQ, "Q.data", test_set)
 
-user = 1
-k = 10
-rats = calculate_k_recommendations(1, 10, "Test1")
-
-print("For user: " + str(user))
-for rat in rats:
-    print("Movies: " + str(rat[0]) + " Rating: " + str(rat[1]))
+bound_results("Test1")
