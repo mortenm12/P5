@@ -11,6 +11,8 @@ class Movie:
         self.actors = actors
         self.directors = directors
         self.number_of_ratings = 0
+        self.average_rating = 0
+        self.bias = 0
 
 
 class User:
@@ -22,6 +24,10 @@ class User:
         self.recommended = []
         self.ratings_in_head = 0
         self.ratings_in_tail = 0
+        self.bias = 0
+
+    def total_ratings(self):
+        return self.ratings_in_head + self.ratings_in_tail
 
     def percent_ratings_in_tail(self):
         if self.ratings_in_head > 0 and self.ratings_in_tail > 0:
@@ -113,10 +119,10 @@ class User:
 # Read movies as a list of Movie objects with all data included
 def read_movies_as_object_list():
     genres_dict = {}
-    genres_file = open("../FullData/Genres.Data", "r", encoding='iso_8859_15')
+    genres_file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
     for line in genres_file:
         parts = line.split('|')
-        genres_dict[int(parts[0])] = parts[1]
+        genres_dict[int(parts[0])] = parts[1][:-1]
 
     if not genres_file.closed:
         genres_file.close()
@@ -124,13 +130,19 @@ def read_movies_as_object_list():
     movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = []
     for line in movies_file:
-        parts = line.split('|')
-        genre_ids = [int(x) for x in parts[2].split(',')]
+        parts = line[:-1].split('|')
+        genre_ids = [int(x) for x in parts[3].split(',')]
         genres = []
         for number in genre_ids:
             genres.append(genres_dict[number])
-        actors = [int(x) for x in parts[3].split(',')]
-        directors = [int(x) for x in parts[4].split(',')]
+        if parts[4] != '':
+            actors = [int(x) for x in parts[4].split(',')]
+        else:
+            actors = []
+        if parts[5] != '':
+            directors = [int(x) for x in parts[5].split(',')]
+        else:
+            directors = []
         movies.append(Movie(int(parts[0]), parts[1], genres, actors, directors))
 
     if not movies_file.closed:
