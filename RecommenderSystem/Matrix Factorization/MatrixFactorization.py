@@ -44,7 +44,7 @@ def calculate_recommendations(nP, nQ, R, test_set):
             if result > most_accurate_product and R[i][j] == 0.0:
                 most_accurate_product = result
                 a = j
-        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "Rating: " + most_accurate_product + "\n")
+        recommendation_file.write("User: " + str(i) + ", Recommended movie: " + str(a) + "Rating: " + str(most_accurate_product) + "\n")
 
     if not recommendation_file.closed:
         recommendation_file.close()
@@ -135,7 +135,7 @@ def __main__(test_set):
     R = read_ratings(test_set)
     R = numpy.array(R)
 
-    K = 42
+    K = 20
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)
 
@@ -143,7 +143,7 @@ def __main__(test_set):
     nP, nQ = matrix_factorization(R, P, Q, K, steps=5000)
 
     # Calculate recommendation and write it to recommendation file.
-    calculate_recommendations(nP, nQ, R, test_set)
+    # calculate_recommendations(nP, nQ, R, test_set)
 
     # Calculate and write all matrices to files for inspection and saving purposes.
     nR = numpy.dot(nP, nQ.T)
@@ -151,5 +151,10 @@ def __main__(test_set):
     write_numpy_matrix(nR, "ratings.data", test_set)
     write_factor_matrix(nP, "P.data", test_set)
     write_factor_matrix(nQ, "Q.data", test_set)
+    bound_results(test_set)
 
-bound_results("Test1")
+__main__("Test1")
+#__main__("Test2")
+#__main__("Test3")
+#__main__("Test4")
+#__main__("Test5")
