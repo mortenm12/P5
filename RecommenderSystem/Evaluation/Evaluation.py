@@ -3,94 +3,103 @@ import numpy as np
 import numpy.ma as npm
 from DataAPI import *
 
-'''
-DISCRIPTION:
-Evaluates a test- and a base-array into a single value
+class RatingEvaluator:
 
-INPUT:
-arrTest: The test-array.
-arrBase: The base-array.
-func_map(float, float -> float): The function to evaluate each rating.
-func_fold(list[(float)] -> float): The function to map all ratings into the resulting value.
+    evaluationAlgorithms = {}
 
-OUTPUT:
-Returns the resulting value.
-'''
+    # Normalized Root Mean Square Error
+    evaluationAlgorithms["NRMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
+    # Normalized Mean Absolute Error
+    evaluationAlgorithms["NMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
+    # Per-User Normalized Mean Absolute Error
+    evaluationAlgorithms["UNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr, 0)))
+    # Per-Movie Normalized Mean Absolute Error
+    evaluationAlgorithms["MNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr, 1)))
 
-def rating_evaluation(arrTest, arrBase, func_map, func_fold):
-    #Mask out invalid ratings
-    arrBase = npm.masked_equal(arrBase, 0)
-    #Map into combined array
-    vec_map = np.vectorize(func_map)
-    arrResult = vec_map(arrTest, arrBase)
-    #Fold into the resulting value
-    return func_fold(arrResult)
+    def __init__(self, predAlgorithms, numTests):
+        self.dictArrs = {}
+        self.dictResults = {}
+        self.numTests = numTests
+        self.predictionAlgorithms = []
+        self.ReadBaseArrays()
+        for algo in predAlgorithms:
+            self.ReadRecommendationArrays(algo)
 
-ratingAlgorithms = ["Matrix Factorization", "NearestNeighbour"]
-numTests = 1
+    '''
+    rating_evaluation:
+    Evaluates a test- and a base-array into a single value
 
-evaluationAlgorithms = {}
+    INPUT:
+    arrTest: The test-array.
+    arrBase: The base-array.
+    func_map(float, float -> float): The function to evaluate each rating.
+    func_fold(arr(float)] -> float): The function to map all ratings into the resulting value.
 
-#Normalized Root Mean Square Error
-evaluationAlgorithms["NRMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
-#Normalized Mean Absolute Error
-evaluationAlgorithms["NMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
-#Per-User Normalized Mean Absolute Error
-evaluationAlgorithms["UNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr,0)))
-#Per-Movie Normalized Mean Absolute Error
-evaluationAlgorithms["MNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr,1)))
+    OUTPUT:
+    Returns the resulting value.
+    '''
+    @staticmethod
+    def rating_evaluation(arrTest, arrBase, func_map, func_fold):
+        # Mask out invalid ratings
+        arrBase = npm.masked_equal(arrBase, 0)
+        # Map into combined array
+        vec_map = np.vectorize(func_map)
+        arrResult = vec_map(arrTest, arrBase)
+        # Fold into the resulting value
+        return func_fold(arrResult)
 
+    def ReadBaseArrays(self):
+        self.dictArrs["Base"] = []
+        for i in range(1, self.numTests + 1):
+            self.dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i)), np.float))
 
-dictArrs = {}
+    def ReadRecommendationArrays(self, strAlgoname):
+        self.dictArrs[strAlgoname] = []
+        for i in range(1, self.numTests + 1):
+            self.dictArrs[strAlgoname].append(np.array(read_recommendation_matrix(strAlgoname, "Test" + str(i)), np.float))
+        self.predictionAlgorithms.append(strAlgoname)
 
-#Read in base arrays
-dictArrs["Base"] = []
-for i in range(1, numTests + 1):
-    dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i)), np.float))
+    def EvaluateAlgorithm(self, strAlgoname):
+        self.dictResults[strAlgoname] = []
+        for i in range(self.numTests):
+            results = {}
+            for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
+                results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
+                                               *RatingEvaluator.evaluationAlgorithms[eAlgo])
+            self.dictResults[strAlgoname].append(results)
 
-#Read in recommendation arrays
-for algo in ratingAlgorithms:
-    dictArrs[algo] = []
-    for i in range(1, numTests + 1):
-        dictArrs[algo].append(np.array(read_recommendation_matrix(algo, "Test" + str(i)), np.float))
+    def EvaluateAllAlgorithms(self):
+        for algo in self.predictionAlgorithms:
+            self.EvaluateAlgorithm(algo)
 
-#Evaluate algorithms
-dictResults = {}
+    def FormatResults(self):
+        output = ""
+        for rAlgo in self.dictResults.keys():
+            output += rAlgo
+            output += "\n---\n"
+            for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
+                output += eAlgo
+                output += ":\n"
+                for i in range(self.numTests):
+                    output += str(i + 1)
+                    output += ". "
+                    output += str(self.dictResults[rAlgo][i][eAlgo])
+                    output += "\n"
+            output += "---\n\n"
+        return output
 
-for rAlgo in ratingAlgorithms:
-    dictResults[rAlgo] = []
-    for i in range(numTests):
-        results = {}
-        for eAlgo in evaluationAlgorithms.keys():
-            results[eAlgo] = rating_evaluation(dictArrs[rAlgo][i], dictArrs["Base"][i], *evaluationAlgorithms[eAlgo])
-        dictResults[rAlgo].append(results)
+    def LogResults(self, strDescription):
+        output = ""
+        output += time.ctime()
+        output += "\nDescription: "
+        output += strDescription
+        output += "\n\n"
+        output += self.FormatResults()
+        logfile = open("EvaluationLog.txt", "a")
+        logfile.write(output)
+        if not logfile.closed:
+            logfile.close()
 
-def FormatResults(strDescription):
-    output = ""
-    output += time.ctime()
-    output += "\nDescription: "
-    output += strDescription
-    output += "\n"
-    for rAlgo in ratingAlgorithms:
-        output += "\n"
-        output += rAlgo
-        output += "\n---\n"
-        for eAlgo in evaluationAlgorithms.keys():
-            output += eAlgo
-            output += ":\n"
-            for i in range(numTests):
-                output += str(i + 1)
-                output += ". "
-                output += str(dictResults[rAlgo][i][eAlgo])
-                output += "\n"
-        output += "---\n"
-    output += "\n"
-    return output
-
-def LogResults():
-    logfile = open("EvaluationLog.txt", "a")
-    logfile.write(FormatResults(input("Evaluation Description:\n")))
-    if not logfile.closed:
-        logfile.close()
-
-LogResults()
+evaluator = RatingEvaluator(["Matrix Factorization", "NearestNeighbour"], 1)
+evaluator.EvaluateAllAlgorithms()
+evaluator.LogResults(input("Evaluation Description:\n"))
