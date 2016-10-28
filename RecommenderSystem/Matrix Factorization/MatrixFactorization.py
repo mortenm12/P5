@@ -154,6 +154,6 @@ class MatrixFactorization:
 
 #test_1 = MatrixFactorization("Test1")
 test_2 = MatrixFactorization("Test2")
-#test_3 = MatrixFactorization("Test3")
-#test_4 = MatrixFactorization("Test4")
-#test_5 = MatrixFactorization("Test5")
+test_3 = MatrixFactorization("Test3")
+test_4 = MatrixFactorization("Test4")
+test_5 = MatrixFactorization("Test5")
