@@ -119,10 +119,10 @@ for user in users:
 
 for user in users:
     for movie in movies:
-        if rated[user][movie] > 5:
-            rated[user][movie] = 5
-        elif rated[user][movie] < 1:
-            rated[user][movie] = 1
+        if rated[user - 1][movie - 1] > 5:
+            rated[user - 1][movie - 1] = 5
+        elif rated[user - 1][movie - 1] < 1:
+            rated[user - 1][movie - 1] = 1
 
 output = open("output.data", "w")
 output.write("   ID, ")
