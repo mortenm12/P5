@@ -117,10 +117,17 @@ for user in users:
             rated[user - 1][movie - 1] = (rate(movie, user, movies, ratings, weight_matrix))
 
 
+for user in users:
+    for movie in movies:
+        if rated[user][movie] > 5:
+            rated[user][movie] = 5
+        elif rated[user][movie] < 1:
+            rated[user][movie] = 1
+
 output = open("output.data", "w")
 output.write("   ID, ")
 for movie in movies:
-    output.write("{:>5}".format(movie) + ", ")
+    output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
 
 i = 0
 output.write("\n")
