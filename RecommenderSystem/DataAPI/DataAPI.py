@@ -271,8 +271,12 @@ def read_ratings_as_list(directory):
 # Read rating matrix output from algorithms into user/item matrix
 # algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
 # test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
-def read_recommendation_matrix(algorithm, test_set):
-    file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+def read_recommendation_matrix(algorithm, test_set, bounded=False):
+    if bounded:
+        file = open("../" + algorithm + "/Output/" + test_set + "/bounded_ratings.data", "r")
+    else:
+        file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+
 
     ratings = []
     for line in file:
@@ -290,3 +294,36 @@ def read_recommendation_matrix(algorithm, test_set):
         file.close()
 
     return ratings
+
+
+# Read the P and Q matrices output by the Matrix Factorization algorithm.
+def read_factor_matrices(test_set):
+    file = open("../Matrix Factorization/Output/" + test_set + "/P.data", "r")
+
+    P = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        P.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            P[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    file = open("../Matrix Factorization/Output/" + test_set + "/Q.data", "r")
+
+    Q = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        Q.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            Q[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    return P, Q
