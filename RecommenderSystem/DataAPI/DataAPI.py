@@ -50,6 +50,19 @@ class User:
             self.average_rating = sum1 / len(self.rated_movies)
 
 
+def read_genres_as_dict():
+    file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
+    genres = {}
+    for line in file:
+        parts = line.split('|')
+        genres[parts[1][:-1]] = int(parts[0])
+
+    if not file.closed:
+        file.close()
+
+    return genres
+
+
 # Read movies as a list of Movie objects with all data included
 def read_movies_as_object_list():
     genres_dict = {}
