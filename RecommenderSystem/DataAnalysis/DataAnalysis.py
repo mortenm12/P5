@@ -2,10 +2,16 @@ from DataAPI import read_movies_as_object_list, read_users_as_object_list, read_
 
 
 def calculate_rating_amount(movies, ratings):
+    movie_ratings = []
+    for j in range(len(ratings[0])):
+        movie_ratings.append(0)
     for i in range(0, len(ratings)):
         for j in range(0, len(ratings[0])):
             if ratings[i][j] > 0.0:
                 movies[j].number_of_ratings += 1
+                movie_ratings[j] += ratings[i][j]
+    for j in range(len(ratings[0])):
+        movies[j].average_rating = float(float(movie_ratings[j]) / float(movies[j].number_of_ratings))
     return movies
 
 
@@ -20,16 +26,20 @@ def calculate_head_and_tail(movies):
 
 def calculate_users_rating_habits(users, ratings, head, tail):
     for user in users:
+        sum = 0
         for movie in head:
             if ratings[user.id - 1][movie.id - 1] > 0.0:
                 user.ratings_in_head += 1
+                sum += ratings[user.id-1][movie.id - 1]
         for movie in tail:
             if ratings[user.id - 1][movie.id - 1] > 0.0:
                 user.ratings_in_tail += 1
+                sum += ratings[user.id - 1][movie.id - 1]
+        user.average_rating = sum / user.total_ratings()
 
     sorted_users = users.copy()
     sorted_users.sort(key=lambda x: x.percent_ratings_in_tail(), reverse=True)
-    return sorted_users
+    return users, sorted_users
 
 
 def write_results_to_files(users, head, tail):
@@ -51,10 +61,46 @@ def write_results_to_files(users, head, tail):
     if not tail_file.closed:
         tail_file.close()
 
-movies = read_movies_as_object_list()
-users = read_users_as_object_list()
-ratings = read_ratings("FinalData")
-movies = calculate_rating_amount(movies, ratings)
-head, tail = calculate_head_and_tail(movies)
-users = calculate_users_rating_habits(users, ratings, head, tail)
-write_results_to_files(users, head, tail)
+
+def calculate_average_rating(R):
+    sum = 0
+    amount = 0
+    for i in range(len(R)):
+        for j in range(len(R[0])):
+            if R[i][j] > 0.0:
+                sum += R[i][j]
+                amount += 1
+
+    return sum / float(amount)
+
+
+def calculate_user_bias(U, average):
+    for user in U:
+        user.bias = user.average_rating - average
+    return U
+
+
+def calculate_movie_bias(M, average):
+    for movie in M:
+        movie.bias = movie.average_rating - average
+    return M
+
+U = read_users_as_object_list()
+M = read_movies_as_object_list()
+R = read_ratings("FullData")
+
+M = calculate_rating_amount(M, R)
+Head, Tail = calculate_head_and_tail(M)
+U, Sort_U = calculate_users_rating_habits(U, R, Head, Tail)
+
+average = calculate_average_rating(R)
+U = calculate_user_bias(U, average)
+M = calculate_movie_bias(M, average)
+
+file = open("user_rating_habits.data", "w")
+
+for user in U:
+    file.write(",".join([str(user.id), str(average + user.bias), str(user.percent_ratings_in_tail())]) + "\n")
+
+if not file.closed:
+    file.close()

@@ -11,6 +11,8 @@ class Movie:
         self.actors = actors
         self.directors = directors
         self.number_of_ratings = 0
+        self.average_rating = 0
+        self.bias = 0
 
 
 class User:
@@ -22,6 +24,10 @@ class User:
         self.recommended = []
         self.ratings_in_head = 0
         self.ratings_in_tail = 0
+        self.bias = 0
+
+    def total_ratings(self):
+        return self.ratings_in_head + self.ratings_in_tail
 
     def percent_ratings_in_tail(self):
         if self.ratings_in_head > 0 and self.ratings_in_tail > 0:
@@ -47,10 +53,10 @@ class User:
 # Read movies as a list of Movie objects with all data included
 def read_movies_as_object_list():
     genres_dict = {}
-    genres_file = open("../FullData/Genres.Data", "r", encoding='iso_8859_15')
+    genres_file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
     for line in genres_file:
         parts = line.split('|')
-        genres_dict[int(parts[0])] = parts[1]
+        genres_dict[int(parts[0])] = parts[1][:-1]
 
     if not genres_file.closed:
         genres_file.close()
@@ -58,13 +64,19 @@ def read_movies_as_object_list():
     movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = []
     for line in movies_file:
-        parts = line.split('|')
-        genre_ids = [int(x) for x in parts[2].split(',')]
+        parts = line[:-1].split('|')
+        genre_ids = [int(x) for x in parts[3].split(',')]
         genres = []
         for number in genre_ids:
             genres.append(genres_dict[number])
-        actors = [int(x) for x in parts[3].split(',')]
-        directors = [int(x) for x in parts[4].split(',')]
+        if parts[4] != '':
+            actors = [int(x) for x in parts[4].split(',')]
+        else:
+            actors = []
+        if parts[5] != '':
+            directors = [int(x) for x in parts[5].split(',')]
+        else:
+            directors = []
         movies.append(Movie(int(parts[0]), parts[1], genres, actors, directors))
 
     if not movies_file.closed:
@@ -193,8 +205,12 @@ def read_ratings_as_list(directory):
 # Read rating matrix output from algorithms into user/item matrix
 # algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
 # test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
-def read_recommendation_matrix(algorithm, test_set):
-    file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+def read_recommendation_matrix(algorithm, test_set, bounded=False):
+    if bounded:
+        file = open("../" + algorithm + "/Output/" + test_set + "/bounded_ratings.data", "r")
+    else:
+        file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+
 
     ratings = []
     for line in file:
@@ -212,3 +228,36 @@ def read_recommendation_matrix(algorithm, test_set):
         file.close()
 
     return ratings
+
+
+# Read the P and Q matrices output by the Matrix Factorization algorithm.
+def read_factor_matrices(test_set):
+    file = open("../Matrix Factorization/Output/" + test_set + "/P.data", "r")
+
+    P = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        P.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            P[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    file = open("../Matrix Factorization/Output/" + test_set + "/Q.data", "r")
+
+    Q = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        Q.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            Q[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    return P, Q
