@@ -14,8 +14,11 @@ class RatingEvaluator:
     # Normalized X Information Weighted Mean Absolute Error
     def generate_XIW(self, arrTests):
         return (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))))
+    # Normalized Root X Information Weighted Mean Square Error
+    def generate_XIWRS(self, arrTests):
+        return (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))) ** 0.5)
     # X = User or Movie
-    testDependantEvalAlgorithms = ["UIW", "MIW"]
+    testDependantEvalAlgorithms = ["UIW", "MIW", "UIWRS", "MIWRS"]
 
     def __init__(self, predAlgorithms, numTests):
         self.arrsEvalAlgorithmsByTest = []
@@ -28,9 +31,13 @@ class RatingEvaluator:
             self.ReadRecommendationArrays(algo)
         for i in range(1, numTests + 1):
             arrTests = np.sign(np.array(read_ratings("Test" + str(i)), np.float))
+            arrUTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1))
+            arrMTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T
             perXFunc = {}
-            perXFunc["UIW"] = self.generate_XIW(np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1)))
-            perXFunc["MIW"] = self.generate_XIW(np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T)
+            perXFunc["UIW"] = self.generate_XIW(arrUTests)
+            perXFunc["MIW"] = self.generate_XIW(arrMTests)
+            perXFunc["UIWRS"] = self.generate_XIWRS(arrUTests)
+            perXFunc["MIWRS"] = self.generate_XIWRS(arrMTests)
             self.arrsEvalAlgorithmsByTest.append(perXFunc)
 
     '''
@@ -86,10 +93,10 @@ class RatingEvaluator:
 
     def FormatResults(self):
         output = ""
-        for rAlgo in self.dictResults.keys():
+        for rAlgo in sorted(self.dictResults.keys()):
             output += rAlgo
             output += "\n---\n"
-            for eAlgo in list(RatingEvaluator.evaluationAlgorithms.keys()) + self.testDependantEvalAlgorithms:
+            for eAlgo in sorted(RatingEvaluator.evaluationAlgorithms.keys()) + self.testDependantEvalAlgorithms:
                 output += eAlgo
                 output += ":\n"
                 for i in range(self.numTests):
@@ -113,6 +120,6 @@ class RatingEvaluator:
             logfile.close()
 
 
-evaluator = RatingEvaluator(["Matrix Factorization", "NearestNeighbour"], 1)
+evaluator = RatingEvaluator(["NearestNeighbour", "Matrix Factorization"], 1)
 evaluator.EvaluateAllAlgorithms()
 evaluator.LogResults(input("Evaluation Description:\n"))
