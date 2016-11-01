@@ -19,8 +19,10 @@ class User:
     # u_id is every user identification number
     def __init__(self, u_id):
         self.id = u_id
+        self.number_of_ratings = 0
         self.average_rating = 0
         self.rated_movies = {}
+        self.rated_genres = []
         self.recommended = []
         self.ratings_in_head = 0
         self.ratings_in_tail = 0
@@ -50,6 +52,7 @@ class User:
             self.average_rating = sum1 / len(self.rated_movies)
 
 
+# Read the genres as a dictionary mapping name to index
 def read_genres_as_dict():
     file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
     genres = {}
@@ -78,10 +81,10 @@ def read_movies_as_object_list():
     movies = []
     for line in movies_file:
         parts = line[:-1].split('|')
-        genre_ids = [int(x) for x in parts[3].split(',')]
-        genres = []
-        for number in genre_ids:
-            genres.append(genres_dict[number])
+        if parts[3] != '':
+            genres = [int(x) for x in parts[3].split(',')]
+        else:
+            genres = []
         if parts[4] != '':
             actors = [int(x) for x in parts[4].split(',')]
         else:
@@ -150,6 +153,56 @@ def read_users_as_id_list():
 
     if not users_file.closed:
         users_file.close()
+
+    return users
+
+
+# Adds rating amount and number of ratings to the objects output by read_movies_as_object_list()
+def add_rating_metrics_to_movies(movies, ratings):
+    for movie in movies:
+        movie.number_of_ratings = 0
+        movie.average_rating = 0.0
+
+    for i in range(len(ratings)):
+        for j in range(len(ratings[0])):
+            if ratings[i][j] > 0.0:
+                movies[j].number_of_ratings += 1
+                movies[j].average_rating += float(ratings[i][j])
+
+    for movie in movies:
+        if not movie.number_of_ratings == 0:
+            movie.average_rating = float(movie.average_rating / float(movie.number_of_ratings))
+
+    return movies
+
+
+# add number of ratings, average rating and what genres was rated how to users
+def add_rating_metrics_to_users(movies, users, ratings):
+    for user in users:
+        user.number_of_ratings = 0
+        user.average_rating = 0.0
+        user.rated_genres = [[0, 0, 0, 0, 0] for x in range(19)]
+
+    for i in range(len(ratings)):
+        for j in range(len(ratings[0])):
+            if ratings[i][j] > 0.0:
+                users[i].number_of_ratings += 1
+                users[i].average_rating += ratings[i][j]
+
+                for genre in movies[j].genres:
+                    if ratings[i][j] >= 5.0:
+                        users[i].rated_genres[genre][4] += 1
+                    elif ratings[i][j] >= 4.0:
+                        users[i].rated_genres[genre][3] += 1
+                    elif ratings[i][j] >= 3.0:
+                        users[i].rated_genres[genre][2] += 1
+                    elif ratings[i][j] >= 2.0:
+                        users[i].rated_genres[genre][1] += 1
+                    elif ratings[i][j] >= 1.0:
+                        users[i].rated_genres[genre][0] += 1
+
+        if not users[i].number_of_ratings == 0:
+            users[i].average_rating = float(users[i].average_rating / float(users[i].number_of_ratings))
 
     return users
 
