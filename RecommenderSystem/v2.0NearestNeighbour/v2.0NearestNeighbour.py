@@ -51,7 +51,7 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix):
 
 
 def rate(movie, user, users, ratings, weight_matrix):
-    weight_rating_tuples = k_nearest_neighbour(movie, user, 20, ratings, users, weight_matrix)
+    weight_rating_tuples = k_nearest_neighbour(movie, user, 40, ratings, users, weight_matrix)
     sum1 = 0
     sum2 = 0
     for x in weight_rating_tuples:
