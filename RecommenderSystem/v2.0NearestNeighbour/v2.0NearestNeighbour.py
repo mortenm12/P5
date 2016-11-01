@@ -2,11 +2,7 @@ import DataAPI
 import math
 import time
 
-directory = "Test1"
 
-users = DataAPI.read_users_as_id_list()
-movies = DataAPI.read_movies_as_id_list()
-ratings = DataAPI.read_ratings(directory)
 
 
 def cos(a, b):
@@ -55,7 +51,7 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix):
 
 
 def rate(movie, user, users, ratings, weight_matrix):
-    weight_rating_tuples = k_nearest_neighbour(movie, user, 5, ratings, users, weight_matrix)
+    weight_rating_tuples = k_nearest_neighbour(movie, user, 20, ratings, users, weight_matrix)
     sum1 = 0
     sum2 = 0
     for x in weight_rating_tuples:
@@ -99,47 +95,53 @@ def calculate_weight_matrix(movies, ratings, users):
 
     return weight_matrix
 
+for x in range(1, 6):
+    directory = "Test" + str(x)
 
-i = 0
-rated = ratings
-weight_matrix = calculate_weight_matrix(movies, ratings, users)
-starting_time = time.time()
-for user in users:
-    i += 1
+    users = DataAPI.read_users_as_id_list()
+    movies = DataAPI.read_movies_as_id_list()
+    ratings = DataAPI.read_ratings(directory)
 
-    current_time = time.time()
-    elapsed_time = current_time - starting_time
-    remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
+    i = 0
+    rated = ratings
+    weight_matrix = calculate_weight_matrix(movies, ratings, users)
+    starting_time = time.time()
+    for user in users:
+        i += 1
 
-    print(round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+        current_time = time.time()
+        elapsed_time = current_time - starting_time
+        remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
+        print(round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+
+        for movie in movies:
+            if ratings[user - 1][movie - 1] == 0.0:
+                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix))
+
+    for user in users:
+        for movie in movies:
+            if rated[user - 1][movie - 1] > 5:
+                rated[user - 1][movie - 1] = 5
+            elif rated[user - 1][movie - 1] < 1:
+                rated[user - 1][movie - 1] = 1
+
+    output = open("Output/Test" + str(x) + "/ratings.data", "w")
+    output.write("   ID, ")
     for movie in movies:
-        if ratings[user - 1][movie - 1] == 0.0:
-            rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix))
+        output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
 
-for user in users:
-    for movie in movies:
-        if rated[user - 1][movie - 1] > 5:
-            rated[user - 1][movie - 1] = 5
-        elif rated[user - 1][movie - 1] < 1:
-            rated[user - 1][movie - 1] = 1
-
-output = open("output.data", "w")
-output.write("   ID, ")
-for movie in movies:
-    output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
-
-i = 0
-output.write("\n")
-
-for user in users:
-    i += 1
-    print(round((i / len(users)) * 100, 1), "%")
-    output.write("{:>5}".format(user) + ", ")
-    for movie in movies:
-        output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
-
+    i = 0
     output.write("\n")
 
-if not output.closed:
-    output.close()
+    for user in users:
+        i += 1
+        print(round((i / len(users)) * 100, 1), "%")
+        output.write("{:>5}".format(user) + ", ")
+        for movie in movies:
+            output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
+
+        output.write("\n")
+
+    if not output.closed:
+        output.close()
