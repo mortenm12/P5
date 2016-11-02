@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/NearestNeighbour" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/NearestNeighbourItemItem" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ContentBased" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CommandLineUI" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.5.2 (/usr/bin/python3.5)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
