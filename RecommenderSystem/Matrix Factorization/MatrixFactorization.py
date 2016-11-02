@@ -62,35 +62,19 @@ def calculate_recommendations(P, Q, R, test_set):
 #   steps, the amount of iteration the algorithm will run for.
 #   alpha, the approximation variable, defining how fast the algorithm converges.
 #   beta, the normalization variable, defining how much to avoid overfitting.
-def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02, debug=False):
-    if debug:
-        log_file = open("Log.txt", "a")
-        log_file.write("For: K=" + str(K) + " steps=" + str(steps) + " alpha=" + str(alpha) + " beta=" + str(beta) + ":\n")
+def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
     # Transposes the Q matrix, so the dot product of P and Q can be taken.
     Q = Q.T
 
     prev_e = 0
     # The main algorithm.
 
-    """
-    nR = numpy.dot(P, Q)
-    print("\n R:" + "".join(" " for x in range((7 * len(R[0])) - 4)) + "|" + "  P:" + "".join(
-        " " for x in range((7 * len(P[0])) - 4)) + "|" + "  Q:" + "".join(
-        " " for x in range((7 * len(Q)) - 4)))
-    for t in range(len(nR) if len(nR) > len(nR[0]) else len(nR[0])):
-        print(((", ".join(["{: 2.2f}".format(x) for x in nR[t, :]])) if t < len(nR) else (
-            "  ".join(["     " for x in range(len(R))]))) + " | " + (
-                  (", ".join(["{: 2.2f}".format(x) for x in P[t, :]])) if t < len(P) else (
-                      "  ".join(["    " for x in range(len(P))]))) + " | " + (
-                  (", ".join(["{: 2.2f}".format(x) for x in Q[:, t]])) if t < len(Q[0]) else ("  ").join(
-                      ["    " for x in range(len(Q[0]))])))
-    """
-
+    time_start = time.time()
     for step in range(0, steps):
 
         # Printing progress.
         print("{:4d}".format(step), end=' ')
-        print(time.ctime(time.time()), end='')
+        print(time.strftime("%H:%M:%S", time.localtime()), end='')
 
         # Iterates over the R matrix, only doing something if a rating has been given
         for i in range(len(R)):
@@ -101,13 +85,6 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02, debug=Fa
                 if R[i][j] > 0:
                     eij = R[i][j] - numpy.dot(P[i, :], Q[:, j])
 
-                    """
-                    if debug:
-                        if numpy.isnan(eij):
-                            print(str(R[i][j]) + " " + str(P[i, :]) + " " + str(Q[:, j]))
-                            return P, Q.T
-                    """
-
                     # Calculate the new entries in the latent factor spaces.
                     for k in range(0, K):
                         Pik = P[i][k]
@@ -115,55 +92,26 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02, debug=Fa
                         P[i][k] = Pik + (alpha * ((2 * eij * Qkj) - (beta * Pik)))
                         Q[k][j] = Qkj + (alpha * ((2 * eij * Pik) - (beta * Qkj)))
 
-                        """
-                        if debug:
-                            if numpy.isinf(P[i][k]) or numpy.isinf(Q[k][j]):
-                                print(str(Pik) + " " + str(Qkj) + " " + str(eij))
-                                return P, Q.T
-                            else:
-                                print("P[{:d}][{:d}]: {:f} = {:f} + {:f} * (2 * {:f} * {:f} - {:f} * {:f}".format(i, k, P[i][k], Pik, alpha, eij, Qkj, beta, Pik))
-                                print("Q[{:d}][{:d}]: {:f} = {:f} + {:f} * (2 * {:f} * {:f} - {:f} * {:f}".format(k, j, Q[k][j], Qkj, alpha, eij, Pik, beta, Qkj))
-                        """
-        nR = numpy.dot(P, Q)
-
-        """
-        print("\n R:" + "".join(" " for x in range((7 * len(R[0])) - 4)) + "|" + "  P:" + "".join(
-            " " for x in range((7 * len(P[0])) - 4)) + "|" + "  Q:" + "".join(
-            " " for x in range((7 * len(Q)) - 4)))
-        for t in range(len(nR) if len(nR) > len(nR[0]) else len(nR[0])):
-            print(((", ".join(["{: 2.2f}".format(x) for x in nR[t, :]])) if t < len(nR) else (
-            "  ".join(["     " for x in range(len(R))]))) + " | " + (
-                  (", ".join(["{: 2.2f}".format(x) for x in P[t, :]])) if t < len(P) else (
-                  "  ".join(["    " for x in range(len(P))]))) + " | " + (
-                  (", ".join(["{: 2.2f}".format(x) for x in Q[:, t]])) if t < len(Q[0]) else ("  ").join(
-                      ["    " for x in range(len(Q[0]))])))
-        """
-
         # Calculate the average error of PxQ from R.
         e = 0
+        g = 0
         for i in range(0, len(R)):
             for j in range(0, len(R[i])):
                 if R[i][j] > 0:
                     e += pow(R[i][j] - numpy.dot(P[i, :], Q[:, j]), 2)
+                    g += 1
                     for k in range(0, K):
                         e += (beta / 2) * (pow(P[i][k], 2) + pow(Q[k][j], 2))
-
+        a_e = e / g
         # If the error is arbitrarily small, stop execution to avoid useless running time.
-        if debug:
-            log_file.write(str(step) + " Error = " + "{:.2f}".format(float(e)) + "\n")
-            print(" Error = " + "{:.2f}".format(float(e)))
-        else:
-            print("")
+        print(" Error = " + "{:.2f}".format(float(e)) + " Average Error = " + "{:.2f}".format(float(a_e)))
 
         if prev_e != 0 and prev_e - e < 0.1:
             break
 
         prev_e = e
 
-    if debug:
-        log_file.write("\n")
-        if not log_file.closed:
-            log_file.close()
+    print("Elapsed time: " + time.strftime("%H:%M:%S", time.localtime(time.time() - time_start)))
 
     return P, Q.T
 
@@ -194,41 +142,30 @@ def bound_results(R_final, test_set):
     write_numpy_matrix(R_bounded, "bounded_ratings.data", test_set)
 
 
-def do_factorization(test_set, K=20, steps=5000, alpha=0.0002, beta=0.02, debug=False):
+def do_factorization(test_set, K=20, steps=1500, alpha=0.0002, beta=0.02):
     # Initialize matrices and values.
     R = read_ratings(test_set)
-    #R = [[5, 4, 0, 0, 1],
-    #     [4, 2, 1, 0, 3],
-    #     [0, 3, 2, 4, 2],
-    #     [4, 0, 2, 4, 0],
-    #     [4, 3, 0, 0, 0]]
-
     R = numpy.array(R)
 
     P = numpy.random.rand(len(R), K)
     Q = numpy.random.rand(len(R[0]), K)
 
     # Run algorithm on matrices.
-    nP, nQ = matrix_factorization(P, Q, R, K=K, steps=steps, alpha=alpha, beta=beta, debug=debug)
+    nP, nQ = matrix_factorization(P, Q, R, K=K, steps=steps, alpha=alpha, beta=beta)
 
     # Calculate recommendation and write it to recommendation file.
     # calculate_recommendations(nP, nQ, R, test_set)
 
     # Calculate and write all matrices to files for inspection and saving purposes.
-    """
-    if not debug:
-        R_final = numpy.dot(P, Q.T)
-        write_numpy_matrix(R, "R_original.data", test_set)
-        write_numpy_matrix(R_final, "ratings.data", test_set)
-        write_factor_matrix(nP, "P.data", test_set)
-        write_factor_matrix(nQ, "Q.data", test_set)
-        bound_results(R_final, test_set)
-    """
+    R_final = numpy.dot(P, Q.T)
+    write_numpy_matrix(R, "R_original.data", test_set)
+    write_numpy_matrix(R_final, "ratings.data", test_set)
+    write_factor_matrix(nP, "P.data", test_set)
+    write_factor_matrix(nQ, "Q.data", test_set)
+    bound_results(R_final, test_set)
 
-
-file = open("Log.txt", "w").close()
-do_factorization("Test1", K=2, steps=5000, alpha=0.03, beta=0.02, debug=True)
-#do_factorization("Test2")
-#do_factorization("Test3")
-#do_factorization("Test4")
-#do_factorization("Test5")
+do_factorization("Test1", K=20, steps=1500, alpha=0.03, beta=0.02)
+do_factorization("Test2", K=20, steps=1500, alpha=0.03, beta=0.02)
+do_factorization("Test3", K=20, steps=1500, alpha=0.03, beta=0.02)
+do_factorization("Test4", K=20, steps=1500, alpha=0.03, beta=0.02)
+do_factorization("Test5", K=20, steps=1500, alpha=0.03, beta=0.02)
