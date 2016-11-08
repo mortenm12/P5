@@ -54,6 +54,21 @@ class User:
             self.average_rating = sum1 / len(self.rated_movies)
 
 
+def append_names_on_recommendations(recommendations):
+    file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
+
+    for line in file:
+        parts = line.split('|')
+        for i in range(len(recommendations)):
+            if int(parts[0]) == recommendations[i][0]:
+                recommendations[i].append(parts[1])
+
+    if not file.closed:
+        file.close()
+
+    return recommendations
+
+
 # Read the genres as a dictionary mapping name to index
 def read_genres_as_dict():
     file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')

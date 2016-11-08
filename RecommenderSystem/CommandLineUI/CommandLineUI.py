@@ -1,4 +1,5 @@
-from ContentBased import calculate_n_recommendations
+from ContentBased import calculate_n_recommendations, do_profiling
+from DataAPI import append_names_on_recommendations
 
 
 def regular_mode():
@@ -9,9 +10,9 @@ def regular_mode():
         if not str.isdigit(s):
             print("That is not an integer dumbass!")
     u_id = int(s)
-    recommendations = calculate_n_recommendations("Test1", u_id, 10)
+    recommendations = append_names_on_recommendations(calculate_n_recommendations("Test1", u_id, 10))
     for recommendation in recommendations:
-        print("Movie " + "{:4d}".format(recommendation[0]) + " with weight " + "{:1.2f}".format(recommendation[1]))
+        print("Movie " + recommendation[2] + " with weight " + "{:1.2f}".format(recommendation[1]))
 
 
 def debug_mode():
