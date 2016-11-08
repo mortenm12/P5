@@ -5,6 +5,8 @@ Implementation of biased Matrix Factorization by Rasmus Jensen
 from DataAPI import *
 import time
 import numpy
+import Evaluation
+import copy
 
 
 # Algorithm to write a matrix to a file
@@ -171,37 +173,51 @@ def calculate_k_recommendations(user, k, test_set):
     ratings = []
     for i in range(len(Q)):
         if R[user - 1][i] == 0.0:
-            ratings.append([i + 1, numpy.dot(P[user, :], Q[i, :]) - global_average + movie_averages[i] + user_averages[user - 1]])
+            ratings.append([i + 1, numpy.dot(P[user - 1, :], Q[i, :]) - global_average + movie_averages[i] + user_averages[user - 1]])
 
     return sorted(ratings, key=lambda x: x[1], reverse=True)[:k]
 
 
+def adjust_for_bias(R, global_average, movie_averages, user_averages):
+    R_new = copy.deepcopy(R)
+    for i in range(len(R)):
+        for j in range(len(R[0])):
+            if R_new[i][j] > 0:
+                R_new[i][j] = R[i][j] - user_averages[i] - movie_averages[j] + global_average
+
+    return R_new
+
+
+def readjust_for_bias(R, global_average, movie_averages, user_averages):
+    R_new = copy.deepcopy(R)
+    for i in range(len(R)):
+        for j in range(len(R[0])):
+            R_new[i][j] = R[i][j] + user_averages[i] + movie_averages[j] - global_average
+
+    return R_new
+
+
 def bound_results(R_final, test_set):
-    R_bounded = R_final.copy()
+    R_bounded = copy.deepcopy(R_final)
     for i in range(len(R_bounded)):
         for j in range(len(R_bounded[0])):
-            if R_bounded[i, j] > 5:
-                R_bounded[i, j] = 5
-            elif R_bounded[i, j] < 1:
-                R_bounded[i, j] = 1
+            if R_bounded[i][j] > 5:
+                R_bounded[i][j] = 5
+            elif R_bounded[i][j] < 1:
+                R_bounded[i][j] = 1
 
     write_numpy_matrix(R_bounded, "bounded_ratings.data", test_set)
 
 
-def do_factorization(test_set, K=20, steps=1500, alpha=0.0002, beta=0.02):
+def do_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
     # Initialize matrices and values.
     R_orig = read_ratings(test_set)
 
     P = numpy.random.rand(len(R_orig), K)
     Q = numpy.random.rand(len(R_orig[0]), K)
-
     global_average, movie_averages, user_averages = calculate_biases(R_orig)
-    R = R_orig.copy()
-    for i in range(len(R_orig)):
-        for j in range(len(R_orig[0])):
-            if R_orig[i][j] > 0:
-                R[i][j] = R_orig[i][j] - user_averages[i] - movie_averages[j] + global_average
 
+    R = adjust_for_bias(R_orig, global_average, movie_averages, user_averages)
     R = numpy.array(R)
 
     # Run algorithm on matrices.
@@ -213,13 +229,18 @@ def do_factorization(test_set, K=20, steps=1500, alpha=0.0002, beta=0.02):
     # Calculate and write all matrices to files for inspection and saving purposes.
     R_final = numpy.dot(P, Q.T)
     write_numpy_matrix(R, "R_original.data", test_set)
-    write_numpy_matrix(R_final, "ratings.data", test_set)
+    write_numpy_matrix(readjust_for_bias(R_final, global_average, movie_averages, user_averages), "ratings.data", test_set)
+    write_numpy_matrix(R_final, "unadjusted_ratings.data", test_set)
     write_factor_matrix(nP, "P.data", test_set)
     write_factor_matrix(nQ, "Q.data", test_set)
-    bound_results(R_final, test_set)
 
-do_factorization("Test1", K=20, steps=1500, alpha=0.03, beta=0.02)
-do_factorization("Test2", K=20, steps=1500, alpha=0.03, beta=0.02)
-do_factorization("Test3", K=20, steps=1500, alpha=0.03, beta=0.02)
-do_factorization("Test4", K=20, steps=1500, alpha=0.03, beta=0.02)
-do_factorization("Test5", K=20, steps=1500, alpha=0.03, beta=0.02)
+do_factorization("Test1", K=50, steps=1000, alpha=0.03, beta=0.02)
+#do_factorization("Test2", K=20, steps=1500, alpha=0.03, beta=0.02)
+#do_factorization("Test3", K=20, steps=1500, alpha=0.03, beta=0.02)
+#do_factorization("Test4", K=20, steps=1500, alpha=0.03, beta=0.02)
+#do_factorization("Test5", K=20, steps=1500, alpha=0.03, beta=0.02)
+
+evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], 1)
+evaluator.EvaluateAllAlgorithms()
+evaluator.LogResults("Evaluation Description: ")
+

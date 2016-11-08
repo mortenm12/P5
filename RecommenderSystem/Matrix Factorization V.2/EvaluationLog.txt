@@ -1,0 +1,152 @@
+Tue Nov  8 12:21:02 2016
+Description: Evaluation Description: 
+
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.67970325
+NRMSE:
+1. 2.03016454321
+UIW:
+1. 1.77501725123
+MIW:
+1. 2.13308164201
+UIWRS:
+1. 2.17179454326
+MIWRS:
+1. 2.39046519874
+---
+
+Tue Nov  8 12:24:12 2016
+Description: Evaluation Description: 
+
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.67970325
+NRMSE:
+1. 2.03016454321
+UIW:
+1. 1.77501725123
+MIW:
+1. 2.13308164201
+UIWRS:
+1. 2.17179454326
+MIWRS:
+1. 2.39046519874
+---
+
+Tue Nov  8 12:25:07 2016
+Description: Evaluation Description: 
+
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.58447875
+NRMSE:
+1. 1.91916510819
+UIW:
+1. 1.55374426234
+MIW:
+1. 2.00694028846
+UIWRS:
+1. 1.89477716536
+MIWRS:
+1. 2.25693882665
+---
+
+.Tue Nov  8 13:56:58 2016
+Description: Evaluation Description: 
+
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.661266375
+NRMSE:
+1. 2.0090847204
+UIW:
+1. 1.77180124085
+MIW:
+1. 2.10626479226
+UIWRS:
+1. 2.1673815441
+MIWRS:
+1. 2.36230878518
+---
+
+Tue Nov  8 14:11:39 2016
+Description: Evaluation Description: 
+
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.62955825
+NRMSE:
+1. 1.96949073557
+UIW:
+1. 1.65673066715
+MIW:
+1. 2.0358217422
+UIWRS:
+1. 2.03436919639
+MIWRS:
+1. 2.29544897634
+---
+
+Tue Nov  8 15:18:16 2016
+Description: Evaluation Description: 
+K = 20
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.667693875
+NRMSE:
+1. 2.01701383269
+UIW:
+1. 1.70889527149
+MIW:
+1. 2.10406689026
+UIWRS:
+1. 2.09655701029
+MIWRS:
+1. 2.36406605501
+---
+
+Tue Nov  8 15:56:39 2016
+Description: Evaluation Description: 
+K = 10
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.92967125
+NRMSE:
+1. 2.30657542636
+UIW:
+1. 1.97605861797
+MIW:
+1. 2.51089720408
+UIWRS:
+1. 2.39219279377
+MIWRS:
+1. 2.75652463993
+---
+
+Tue Nov  8 16:29:36 2016
+Description: Evaluation Description: 
+K = 50
+Matrix Factorization V.2
+---
+NMAE:
+1. 1.472361625
+NRMSE:
+1. 1.97720271059
+UIW:
+1. 2.40259111965
+MIW:
+1. 1.77075022345
+UIWRS:
+1. 3.56605016216
+MIWRS:
+1. 2.2843192076
+---
+
