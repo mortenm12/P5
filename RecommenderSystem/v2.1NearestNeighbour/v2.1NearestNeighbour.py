@@ -108,7 +108,7 @@ def calculate_average_rating(movies, ratings, users):
         if i != 0:
             average_array.insert(user, sum1 / i)
         else:
-            average_array.insert(user, 0)
+            average_array.insert(user, 3)
 
     return average_array
 
