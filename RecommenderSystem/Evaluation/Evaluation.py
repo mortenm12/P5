@@ -11,12 +11,17 @@ class RatingEvaluator:
     evaluationAlgorithms["NRMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
     # Normalized Mean Absolute Error
     evaluationAlgorithms["NMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
-    # Per-User Normalized Mean Absolute Error
-    evaluationAlgorithms["UNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr, 0)))
-    # Per-Movie Normalized Mean Absolute Error
-    evaluationAlgorithms["MNMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(np.mean(arr, 1)))
+    # Normalized X Information Weighted Mean Absolute Error
+    def generate_XIW(self, arrTests):
+        return (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))))
+    # Normalized Root X Information Weighted Mean Square Error
+    def generate_XIWRS(self, arrTests):
+        return (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))) ** 0.5)
+    # X = User or Movie
+    testDependantEvalAlgorithms = ["UIW", "MIW", "UIWRS", "MIWRS"]
 
     def __init__(self, predAlgorithms, numTests):
+        self.arrsEvalAlgorithmsByTest = []
         self.dictArrs = {}
         self.dictResults = {}
         self.numTests = numTests
@@ -24,6 +29,16 @@ class RatingEvaluator:
         self.ReadBaseArrays()
         for algo in predAlgorithms:
             self.ReadRecommendationArrays(algo)
+        for i in range(1, numTests + 1):
+            arrTests = np.sign(np.array(read_ratings("Test" + str(i)), np.float))
+            arrUTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1))
+            arrMTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T
+            perXFunc = {}
+            perXFunc["UIW"] = self.generate_XIW(arrUTests)
+            perXFunc["MIW"] = self.generate_XIW(arrMTests)
+            perXFunc["UIWRS"] = self.generate_XIWRS(arrUTests)
+            perXFunc["MIWRS"] = self.generate_XIWRS(arrMTests)
+            self.arrsEvalAlgorithmsByTest.append(perXFunc)
 
     '''
     rating_evaluation:
@@ -38,6 +53,7 @@ class RatingEvaluator:
     OUTPUT:
     Returns the resulting value.
     '''
+
     @staticmethod
     def rating_evaluation(arrTest, arrBase, func_map, func_fold):
         # Mask out invalid ratings
@@ -65,7 +81,10 @@ class RatingEvaluator:
             results = {}
             for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
                 results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
-                                               *RatingEvaluator.evaluationAlgorithms[eAlgo])
+                                                                    *RatingEvaluator.evaluationAlgorithms[eAlgo])
+            for eAlgo in self.testDependantEvalAlgorithms:
+                results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
+                                                                    *self.arrsEvalAlgorithmsByTest[i][eAlgo])
             self.dictResults[strAlgoname].append(results)
 
     def EvaluateAllAlgorithms(self):
@@ -74,10 +93,10 @@ class RatingEvaluator:
 
     def FormatResults(self):
         output = ""
-        for rAlgo in self.dictResults.keys():
+        for rAlgo in sorted(self.dictResults.keys()):
             output += rAlgo
             output += "\n---\n"
-            for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
+            for eAlgo in sorted(RatingEvaluator.evaluationAlgorithms.keys()) + self.testDependantEvalAlgorithms:
                 output += eAlgo
                 output += ":\n"
                 for i in range(self.numTests):
@@ -100,6 +119,7 @@ class RatingEvaluator:
         if not logfile.closed:
             logfile.close()
 
-evaluator = RatingEvaluator(["Matrix Factorization", "NearestNeighbour"], 1)
+
+evaluator = RatingEvaluator(["NearestNeighbour", "Matrix Factorization"], 1)
 evaluator.EvaluateAllAlgorithms()
 evaluator.LogResults(input("Evaluation Description:\n"))

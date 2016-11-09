@@ -19,8 +19,12 @@ class User:
     # u_id is every user identification number
     def __init__(self, u_id):
         self.id = u_id
+        self.number_of_ratings = 0
         self.average_rating = 0
         self.rated_movies = {}
+        self.rated_genres = []
+        self.rated_actors = []
+        self.rated_directors = []
         self.recommended = []
         self.ratings_in_head = 0
         self.ratings_in_tail = 0
@@ -49,71 +53,43 @@ class User:
                 sum1 += self.rated_movies[movie]
             self.average_rating = sum1 / len(self.rated_movies)
 
-    # user2 is a user who is not the user self
-    # returns an array of both the users ratings of movies the both have seen
-    def find_both_rated_movies(self, user2):
-        rated = [[], []]
-        for movie in self.rated_movies:
-            if int(movie) in user2.rated_movies:
-                rated[0].append(self.rated_movies[movie])
-                rated[1].append(user2.rated_movies[movie])
-        return rated
 
-    # user2 is a user who is not the user self
-    # returns the weight between self and user2
-    def weight(self, user2):  # page 124
-        data = self.find_both_rated_movies(user2)
-        return cos(data[0], data[1])
+# Read the genres as a dictionary mapping name to index
+def read_genres_as_dict():
+    file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
+    genres = {}
+    for line in file:
+        parts = line.split('|')
+        genres[parts[1][:-1]] = int(parts[0])
 
-    # movie is a movie in the dictionary all_movies
-    # Returns the average of the users ratings, and the average of what other rat the movie, compared to normal
-    def mean_center(self, movie, list_of_users):  # page 121
-        sum1 = 0
-        user_who_have_seen_this_movie = []
+    if not file.closed:
+        file.close()
 
-        # makes a list of all users who have seen the movie
-        for user in list_of_users:
-            if movie in user.rated_movies:
-                user_who_have_seen_this_movie.append(user)
+    return genres
 
-        for user in user_who_have_seen_this_movie:
-            sum1 += user.rated_movies[movie] - user.average_rating
 
-        if len(self.rated_movies) == 0 and len(user_who_have_seen_this_movie) == 0:
-            return self.average_rating + sum1
-        elif len(self.rated_movies) == 0:
-            return self.average_rating + (sum1 / len(user_who_have_seen_this_movie))
-        elif len(user_who_have_seen_this_movie) == 0:
-            return (self.average_rating / len(self.rated_movies)) + sum1
-        else:
-            return (self.average_rating / len(self.rated_movies)) + (sum1 / len(user_who_have_seen_this_movie))
+def get_actor_count():
+    file = open("../FullData/Actors.data", "r", encoding="iso_8859_15")
+    i = 0
+    for line in file:
+        i += 1
 
-    # k is the numbers of neighbours the algorithm should find, and movie is the movie ever neighbour should have rated
-    # returns a list of k numbers of users who have the highest weight to the user self
-    def find_k_nearest_neighbour(self, k, movie, list_of_users):
-        users = []
+    if not file.closed:
+        file.close()
 
-        for user in list_of_users:
-            if int(movie) in user.rated_movies:
-                users.insert(user.id, [user, self.weight(user)])
+    return i
 
-        users.sort(key=lambda x: x[1])
 
-        return users[:k]
+def get_director_count():
+    file = open("../FullData/Directors.data", "r", encoding="iso_8859_15")
+    i = 0
+    for line in file:
+        i += 1
 
-    # movie is a movie in the dictionary all_movies
-    # return a recommendation for the user self on movie
-    def recommend(self, movie, list_of_users):  # page 115
-        users = self.find_k_nearest_neighbour(5, movie, list_of_users)
-        sum1 = 0
-        sum2 = 0
-        for user in users:
-            sum1 += user[1] * user[0].rated_movies[int(movie)]
-            sum2 += user[1]
-        if sum2 == 0:
-            return self.mean_center(movie, list_of_users)
-        else:
-            return (sum1 / sum2) + self.mean_center(movie, list_of_users)
+    if not file.closed:
+        file.close()
+
+    return i
 
 
 # Read movies as a list of Movie objects with all data included
@@ -131,10 +107,10 @@ def read_movies_as_object_list():
     movies = []
     for line in movies_file:
         parts = line[:-1].split('|')
-        genre_ids = [int(x) for x in parts[3].split(',')]
-        genres = []
-        for number in genre_ids:
-            genres.append(genres_dict[number])
+        if parts[3] != '':
+            genres = [int(x) for x in parts[3].split(',')]
+        else:
+            genres = []
         if parts[4] != '':
             actors = [int(x) for x in parts[4].split(',')]
         else:
@@ -207,6 +183,82 @@ def read_users_as_id_list():
     return users
 
 
+# Adds rating amount and number of ratings to the objects output by read_movies_as_object_list()
+def add_rating_metrics_to_movies(movies, ratings):
+    for movie in movies:
+        movie.number_of_ratings = 0
+        movie.average_rating = 0.0
+
+    for i in range(len(ratings)):
+        for j in range(len(ratings[0])):
+            if ratings[i][j] > 0.0:
+                movies[j].number_of_ratings += 1
+                movies[j].average_rating += float(ratings[i][j])
+
+    for movie in movies:
+        if not movie.number_of_ratings == 0:
+            movie.average_rating = float(movie.average_rating / float(movie.number_of_ratings))
+
+    return movies
+
+
+# add number of ratings, average rating and what genres was rated how to users
+def add_rating_metrics_to_users(movies, users, ratings):
+    for user in users:
+        user.number_of_ratings = 0
+        user.average_rating = 0.0
+        user.rated_genres = [[0, 0, 0, 0, 0] for x in range(19)]
+        user.rated_actors = [[0, 0, 0, 0, 0] for x in range(get_actor_count())]
+        user.rated_directors = [[0, 0, 0, 0, 0] for x in range(get_director_count())]
+
+    for i in range(len(ratings)):
+        for j in range(len(ratings[0])):
+            if ratings[i][j] > 0.0:
+                users[i].number_of_ratings += 1
+                users[i].average_rating += ratings[i][j]
+
+                for genre in movies[j].genres:
+                    if ratings[i][j] >= 5.0:
+                        users[i].rated_genres[genre][4] += 1
+                    elif ratings[i][j] >= 4.0:
+                        users[i].rated_genres[genre][3] += 1
+                    elif ratings[i][j] >= 3.0:
+                        users[i].rated_genres[genre][2] += 1
+                    elif ratings[i][j] >= 2.0:
+                        users[i].rated_genres[genre][1] += 1
+                    elif ratings[i][j] >= 1.0:
+                        users[i].rated_genres[genre][0] += 1
+
+                for actor in movies[j].actors:
+                    if ratings[i][j] >= 5.0:
+                        users[i].rated_actors[actor][4] += 1
+                    elif ratings[i][j] >= 4.0:
+                        users[i].rated_actors[actor][3] += 1
+                    elif ratings[i][j] >= 3.0:
+                        users[i].rated_actors[actor][2] += 1
+                    elif ratings[i][j] >= 2.0:
+                        users[i].rated_actors[actor][1] += 1
+                    elif ratings[i][j] >= 1.0:
+                        users[i].rated_actors[actor][0] += 1
+
+                for director in movies[j].directors:
+                    if ratings[i][j] >= 5.0:
+                        users[i].rated_directors[director][4] += 1
+                    elif ratings[i][j] >= 4.0:
+                        users[i].rated_directors[director][3] += 1
+                    elif ratings[i][j] >= 3.0:
+                        users[i].rated_directors[director][2] += 1
+                    elif ratings[i][j] >= 2.0:
+                        users[i].rated_directors[director][1] += 1
+                    elif ratings[i][j] >= 1.0:
+                        users[i].rated_directors[director][0] += 1
+
+        if not users[i].number_of_ratings == 0:
+            users[i].average_rating = float(users[i].average_rating / float(users[i].number_of_ratings))
+
+    return users
+
+
 # Read ratings as a user/item rating matrix
 def read_ratings(directory):
     users = read_users_as_id_list()
@@ -271,8 +323,12 @@ def read_ratings_as_list(directory):
 # Read rating matrix output from algorithms into user/item matrix
 # algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
 # test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
-def read_recommendation_matrix(algorithm, test_set):
-    file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+def read_recommendation_matrix(algorithm, test_set, bounded=False):
+    if bounded:
+        file = open("../" + algorithm + "/Output/" + test_set + "/bounded_ratings.data", "r")
+    else:
+        file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
+
 
     ratings = []
     for line in file:
@@ -290,3 +346,36 @@ def read_recommendation_matrix(algorithm, test_set):
         file.close()
 
     return ratings
+
+
+# Read the P and Q matrices output by the Matrix Factorization algorithm.
+def read_factor_matrices(test_set):
+    file = open("../Matrix Factorization/Output/" + test_set + "/P.data", "r")
+
+    P = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        P.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            P[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    file = open("../Matrix Factorization/Output/" + test_set + "/Q.data", "r")
+
+    Q = []
+    for line in file:
+        parts = [x.strip() for x in line.split(',')]
+        Q.insert(int(parts[0]) - 1, [])
+        j = 0
+        for rating in [float(x) for x in parts[1:]]:
+            Q[int(parts[0]) - 1].insert(j, rating)
+            j += 1
+
+    if not file.closed:
+        file.close()
+
+    return P, Q
