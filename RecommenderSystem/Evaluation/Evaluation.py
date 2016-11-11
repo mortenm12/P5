@@ -21,7 +21,7 @@ class RatingEvaluator:
     testDependantEvalAlgorithms = ["UIW", "MIW", "UIWRS", "MIWRS"]
 
     def __init__(self, predAlgorithms, numTests):
-        self.arrsEvalAlgorithmsByTest = []
+        self.arrsEvalAlgorithmsByTest = {}
         self.dictArrs = {}
         self.dictResults = {}
         self.numTests = numTests
@@ -29,7 +29,7 @@ class RatingEvaluator:
         self.ReadBaseArrays()
         for algo in predAlgorithms:
             self.ReadRecommendationArrays(algo)
-        for i in range(1, numTests + 1):
+        for i in numTests:
             arrTests = np.sign(np.array(read_ratings("Test" + str(i)), np.float))
             arrUTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1))
             arrMTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T
@@ -38,7 +38,7 @@ class RatingEvaluator:
             perXFunc["MIW"] = self.generate_XIW(arrMTests)
             perXFunc["UIWRS"] = self.generate_XIWRS(arrUTests)
             perXFunc["MIWRS"] = self.generate_XIWRS(arrMTests)
-            self.arrsEvalAlgorithmsByTest.append(perXFunc)
+            self.arrsEvalAlgorithmsByTest[i] = perXFunc
 
     '''
     rating_evaluation:
@@ -65,19 +65,19 @@ class RatingEvaluator:
         return func_fold(arrResult)
 
     def ReadBaseArrays(self):
-        self.dictArrs["Base"] = []
-        for i in range(1, self.numTests + 1):
-            self.dictArrs["Base"].append(np.array(read_base_ratings("Test" + str(i)), np.float))
+        self.dictArrs["Base"] = {}
+        for i in self.numTests:
+            self.dictArrs["Base"][i] = np.array(read_base_ratings("Test" + str(i)), np.float)
 
     def ReadRecommendationArrays(self, strAlgoname):
-        self.dictArrs[strAlgoname] = []
-        for i in range(1, self.numTests + 1):
-            self.dictArrs[strAlgoname].append(np.array(read_recommendation_matrix(strAlgoname, "Test" + str(i)), np.float))
+        self.dictArrs[strAlgoname] = {}
+        for i in self.numTests:
+            self.dictArrs[strAlgoname][i] = np.array(read_recommendation_matrix(strAlgoname, "Test" + str(i)), np.float)
         self.predictionAlgorithms.append(strAlgoname)
 
     def EvaluateAlgorithm(self, strAlgoname):
-        self.dictResults[strAlgoname] = []
-        for i in range(self.numTests):
+        self.dictResults[strAlgoname] = {}
+        for i in self.numTests:
             results = {}
             for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
                 results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
@@ -85,7 +85,7 @@ class RatingEvaluator:
             for eAlgo in self.testDependantEvalAlgorithms:
                 results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
                                                                     *self.arrsEvalAlgorithmsByTest[i][eAlgo])
-            self.dictResults[strAlgoname].append(results)
+            self.dictResults[strAlgoname][i] = results
 
     def EvaluateAllAlgorithms(self):
         for algo in self.predictionAlgorithms:
@@ -99,8 +99,8 @@ class RatingEvaluator:
             for eAlgo in sorted(RatingEvaluator.evaluationAlgorithms.keys()) + self.testDependantEvalAlgorithms:
                 output += eAlgo
                 output += ":\n"
-                for i in range(self.numTests):
-                    output += str(i + 1)
+                for i in self.numTests:
+                    output += str(i)
                     output += ". "
                     output += str(self.dictResults[rAlgo][i][eAlgo])
                     output += "\n"
@@ -120,6 +120,6 @@ class RatingEvaluator:
             logfile.close()
 
 
-evaluator = RatingEvaluator(["NearestNeighbour", "Matrix Factorization"], 1)
+evaluator = RatingEvaluator(["Matrix Factorization"], [1])
 evaluator.EvaluateAllAlgorithms()
 evaluator.LogResults(input("Evaluation Description:\n"))
