@@ -211,13 +211,13 @@ def bound_results(R_final, test_set):
 
 def do_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
     # Initialize matrices and values.
-    R_orig = read_ratings(test_set)
+    R = read_ratings(test_set)
 
-    P = numpy.random.rand(len(R_orig), K)
-    Q = numpy.random.rand(len(R_orig[0]), K)
-    global_average, movie_averages, user_averages = calculate_biases(R_orig)
+    P = numpy.random.rand(len(R), K)
+    Q = numpy.random.rand(len(R[0]), K)
+    global_average, movie_averages, user_averages = calculate_biases(R)
 
-    R = adjust_for_bias(R_orig, global_average, movie_averages, user_averages)
+    R = adjust_for_bias(R, global_average, movie_averages, user_averages)
     R = numpy.array(R)
 
     # Run algorithm on matrices.
@@ -234,13 +234,22 @@ def do_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
     write_factor_matrix(nP, "P.data", test_set)
     write_factor_matrix(nQ, "Q.data", test_set)
 
-do_factorization("Test1", K=50, steps=1000, alpha=0.03, beta=0.02)
-#do_factorization("Test2", K=20, steps=1500, alpha=0.03, beta=0.02)
-#do_factorization("Test3", K=20, steps=1500, alpha=0.03, beta=0.02)
-#do_factorization("Test4", K=20, steps=1500, alpha=0.03, beta=0.02)
-#do_factorization("Test5", K=20, steps=1500, alpha=0.03, beta=0.02)
 
-evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], 1)
+print("Do you want to run for all test sets? (Y/N)")
+s = input()
+if s == 'Y':
+    tests_to_run = [1, 2, 3, 4, 5]
+elif s == 'N':
+    print("What test set will you run it for?")
+    s = input
+    tests_to_run = [int(s)]
+else:
+    tests_to_run = [1]
+
+for i in tests_to_run:
+    do_factorization("Test" + str(i), K=20, steps=1000, alpha=0.03, beta=0.02)
+
+evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], tests_to_run)
 evaluator.EvaluateAllAlgorithms()
 evaluator.LogResults("Evaluation Description: ")
 
