@@ -323,12 +323,13 @@ def read_ratings_as_list(directory):
 # Read rating matrix output from algorithms into user/item matrix
 # algorithm is the directory of the algorithm, e.g. "Matrix Factorization" or "NearestNeighbour"
 # test_set is the test_set from which data is preferred, e.g. "Test1", "Test2" etc.
-def read_recommendation_matrix(algorithm, test_set, bounded=False):
-    if bounded:
+def read_recommendation_matrix(algorithm, test_set, bounded=False, adjusted=True):
+    if bounded and not adjusted:
         file = open("../" + algorithm + "/Output/" + test_set + "/bounded_ratings.data", "r")
-    else:
+    elif adjusted:
         file = open("../" + algorithm + "/Output/" + test_set + "/ratings.data", "r")
-
+    else:
+        file = open("../" + algorithm + "/Output/" + test_set + "/unadjusted_ratings.data", "r")
 
     ratings = []
     for line in file:
