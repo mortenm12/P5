@@ -7,18 +7,18 @@ class RatingEvaluator:
 
     evaluationAlgorithms = {}
 
-    # Normalized Root Mean Square Error
-    evaluationAlgorithms["NRMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
-    # Normalized Mean Absolute Error
-    evaluationAlgorithms["NMAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
+    # Root Mean Square Error
+    evaluationAlgorithms["RMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
+    # Mean Absolute Error
+    evaluationAlgorithms["MAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
     # Normalized X Information Weighted Mean Absolute Error
-    def generate_XIW(self, arrTests):
+    def generate_MXIWAE(self, arrTests):
         return (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))))
     # Normalized Root X Information Weighted Mean Square Error
-    def generate_XIWRS(self, arrTests):
+    def generate_RMXIWSE(self, arrTests):
         return (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))) ** 0.5)
     # X = User or Movie
-    testDependantEvalAlgorithms = ["UIW", "MIW", "UIWRS", "MIWRS"]
+    testDependantEvalAlgorithms = ["MUIWAE", "MMIWAE", "RMUIWSE", "RMMIWSE"]
 
     def __init__(self, predAlgorithms, numTests):
         self.arrsEvalAlgorithmsByTest = {}
@@ -34,10 +34,10 @@ class RatingEvaluator:
             arrUTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1))
             arrMTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T
             perXFunc = {}
-            perXFunc["UIW"] = self.generate_XIW(arrUTests)
-            perXFunc["MIW"] = self.generate_XIW(arrMTests)
-            perXFunc["UIWRS"] = self.generate_XIWRS(arrUTests)
-            perXFunc["MIWRS"] = self.generate_XIWRS(arrMTests)
+            perXFunc["MUIWAE"] = self.generate_MXIWAE(arrUTests)
+            perXFunc["MMIWAE"] = self.generate_MXIWAE(arrMTests)
+            perXFunc["RMUIWSE"] = self.generate_RMXIWSE(arrUTests)
+            perXFunc["RMMIWSE"] = self.generate_RMXIWSE(arrMTests)
             self.arrsEvalAlgorithmsByTest[i] = perXFunc
 
     '''
