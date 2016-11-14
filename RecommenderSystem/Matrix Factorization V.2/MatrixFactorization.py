@@ -26,9 +26,9 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
     Q = Q.T
 
     prev_error = 0
-    # The main algorithm.
-
     time_start = time.time()
+
+    # The main algorithm.
     for step in range(0, steps):
 
         # Printing progress.
@@ -63,7 +63,6 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
                     for k in range(0, K):
                         error += (beta / 2) * (pow(P[i][k], 2) + pow(Q[k][j], 2))
         average_error = error / entries
-
         print(" Error = " + "{:.2f}".format(float(error)) + " Average Error = " + "{:.2f}".format(float(average_error)))
 
         # If the change in error is arbitrarily small, stop execution to avoid useless running time.
@@ -147,7 +146,7 @@ def readjust_for_bias(R, global_average, movie_averages, user_averages):
 
 
 # Run the matrix factorization algorithm with all setup.
-def do_matrix_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
+def do_biased_matrix_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
     # Initialize matrices and values.
     R = read_ratings(test_set)
     P = numpy.random.rand(len(R), K)
@@ -162,7 +161,7 @@ def do_matrix_factorization(test_set, K=20, steps=1500, alpha=0.03, beta=0.02):
     # Calculate recommendation matrix.
     recommendations = numpy.dot(P, Q.T)
 
-    # write all matrices to files for inspection and saving purposes.
+    # Write all matrices to files for inspection and saving purposes.
     write_matrix(R, "R_original.data", test_set)
     write_matrix(readjust_for_bias(recommendations, global_average, movie_averages, user_averages), "ratings.data", test_set)
     write_matrix(recommendations, "unadjusted_ratings.data", test_set)
@@ -241,7 +240,7 @@ else:
 
 # Run the algorithms on all test sets.
 for i in tests_to_run:
-    do_matrix_factorization("Test" + str(i), K=20, steps=1000, alpha=0.03, beta=0.02)
+    do_biased_matrix_factorization("Test" + str(i), K=20, steps=1000, alpha=0.03, beta=0.02)
 
 # Automatically run evaluation on the output of the algorithm.
 evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], tests_to_run)
