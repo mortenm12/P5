@@ -1,44 +1,74 @@
 import time
 import numpy as np
 import numpy.ma as npm
+import functools as ft
 from DataAPI import *
+
+class EvaluationAlgorithm:
+
+    #All our algorithms are prefabs with a functionGenerator and a boolean value indicating weather they are testdependant or not.
+
+    prefabs = {}
+
+    prefabs["MAE"] = ("MAE", lambda args: (lambda a, b: abs(a - b), lambda arr: np.mean(arr)), False, None)
+
+    prefabs["RMSE"] = ("RMSE", lambda args: (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5), False, None)
+
+    #testArray gets preprocessed into user-/movieTests using partial. This makes the conversion happen only once and not every evaluation.
+    prefabs["MUIWAE"] = ("MUIWAE", lambda testArray, args: ft.partial(lambda userRatings: (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr))))),
+                                           userRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 0) + 1))), True, None)
+
+    prefabs["MMIWAE"] = ("MMIWAE", lambda testArray, args: ft.partial(lambda movieRatings: (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr))))),
+                                           movieRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 1) + 1)).T), True, None)
+
+    prefabs["RMUIWSE"] = ("RMUIWSE", lambda testArray, args: ft.partial(lambda userRatings: (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr)))) ** 0.5),
+                                           userRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 0) + 1))), True, None)
+
+    prefabs["RMMIWSE"] = ("RMMIWSE", lambda testArray, args: ft.partial(lambda movieRatings: (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr)))) ** 0.5),
+                                           movieRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 1) + 1)).T), True, None)
+
+    def __init__(self, mappingFunction, foldingFunction, name):
+        self.mappingFunction = mappingFunction
+        self.foldingFunction = foldingFunction
+        self.name = name
+
+    def __call__(self, predictedArray, baseArray):
+        # Mask out invalid ratings
+        baseArray = npm.masked_equal(baseArray, 0)
+        # Map into combined array
+        resultArray = self.mappingFunction(predictedArray, baseArray)
+        # Fold into the resulting value
+        return self.foldingFunction(resultArray)
 
 class RatingEvaluator:
 
-    evaluationAlgorithms = {}
+    defaultAlgorithms = [
+        EvaluationAlgorithm.prefabs["MAE"],
+        EvaluationAlgorithm.prefabs["RMSE"],
+        EvaluationAlgorithm.prefabs["MUIWAE"],
+        EvaluationAlgorithm.prefabs["MMIWAE"],
+        EvaluationAlgorithm.prefabs["RMUIWSE"],
+        EvaluationAlgorithm.prefabs["RMMIWSE"]
+    ]
 
-    # Root Mean Square Error
-    evaluationAlgorithms["RMSE"] = (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5)
-    # Mean Absolute Error
-    evaluationAlgorithms["MAE"] = (lambda a, b: abs(a - b), lambda arr: np.mean(arr))
-    # Normalized X Information Weighted Mean Absolute Error
-    def generate_MXIWAE(self, arrTests):
-        return (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))))
-    # Normalized Root X Information Weighted Mean Square Error
-    def generate_RMXIWSE(self, arrTests):
-        return (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (arrTests / npm.mean(arrTests * np.ones_like(arr)))) ** 0.5)
-    # X = User or Movie
-    testDependantEvalAlgorithms = ["MUIWAE", "MMIWAE", "RMUIWSE", "RMMIWSE"]
-
-    def __init__(self, predAlgorithms, numTests):
-        self.arrsEvalAlgorithmsByTest = {}
-        self.dictArrs = {}
-        self.dictResults = {}
-        self.numTests = numTests
+    def __init__(self, predictionAlgorithms, testIndexes, evaluationAlgorithms = defaultAlgorithms):
+        self.arrays = {}
+        self.results = {}
+        self.evaluationAlgorithms = {}
+        self.evaluationAlgorithmByTest = {}
+        self.testIndexes = testIndexes
         self.predictionAlgorithms = []
         self.ReadBaseArrays()
-        for algo in predAlgorithms:
+        for algo in predictionAlgorithms:
             self.ReadRecommendationArrays(algo)
-        for i in numTests:
-            arrTests = np.sign(np.array(read_ratings("Test" + str(i)), np.float))
-            arrUTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 0) + 1))
-            arrMTests = np.atleast_2d(np.reciprocal(np.sum(arrTests, 1) + 1)).T
-            perXFunc = {}
-            perXFunc["MUIWAE"] = self.generate_MXIWAE(arrUTests)
-            perXFunc["MMIWAE"] = self.generate_MXIWAE(arrMTests)
-            perXFunc["RMUIWSE"] = self.generate_RMXIWSE(arrUTests)
-            perXFunc["RMMIWSE"] = self.generate_RMXIWSE(arrMTests)
-            self.arrsEvalAlgorithmsByTest[i] = perXFunc
+        for algo in filter(lambda algo: algo[2] == False, evaluationAlgorithms):
+            self.evaluationAlgorithms[algo[0]] = EvaluationAlgorithm(*algo[1](algo[3]), algo[0])
+        for algo in filter(lambda algo: algo[2] == True, evaluationAlgorithms):
+            self.evaluationAlgorithmByTest[algo[0]] = {}
+        for i in testIndexes:
+            testArray = np.sign(np.array(read_ratings("Test" + str(i)), np.float))
+            for algo in filter(lambda item: item[2] == True, evaluationAlgorithms):
+                self.evaluationAlgorithmByTest[algo[0]][i] = EvaluationAlgorithm(*algo[1](testArray, algo[3])(), algo[0])
 
     '''
     rating_evaluation:
@@ -54,38 +84,27 @@ class RatingEvaluator:
     Returns the resulting value.
     '''
 
-    @staticmethod
-    def rating_evaluation(arrTest, arrBase, func_map, func_fold):
-        # Mask out invalid ratings
-        arrBase = npm.masked_equal(arrBase, 0)
-        # Map into combined array
-        vec_map = np.vectorize(func_map)
-        arrResult = vec_map(arrTest, arrBase)
-        # Fold into the resulting value
-        return func_fold(arrResult)
-
     def ReadBaseArrays(self):
-        self.dictArrs["Base"] = {}
-        for i in self.numTests:
-            self.dictArrs["Base"][i] = np.array(read_base_ratings("Test" + str(i)), np.float)
+        self.arrays["Base"] = {}
+        for i in self.testIndexes:
+            self.arrays["Base"][i] = np.array(read_base_ratings("Test" + str(i)), np.float)
 
-    def ReadRecommendationArrays(self, strAlgoname):
-        self.dictArrs[strAlgoname] = {}
-        for i in self.numTests:
-            self.dictArrs[strAlgoname][i] = np.array(read_recommendation_matrix(strAlgoname, "Test" + str(i)), np.float)
-        self.predictionAlgorithms.append(strAlgoname)
+    def ReadRecommendationArrays(self, algorithmName):
+        self.arrays[algorithmName] = {}
+        for i in self.testIndexes:
+            self.arrays[algorithmName][i] = np.array(read_recommendation_matrix(algorithmName, "Test" + str(i)), np.float)
+        self.predictionAlgorithms.append(algorithmName)
 
-    def EvaluateAlgorithm(self, strAlgoname):
-        self.dictResults[strAlgoname] = {}
-        for i in self.numTests:
+    def EvaluateAlgorithm(self, algorithmName):
+        self.results[algorithmName] = {}
+        for i in self.testIndexes:
             results = {}
-            for eAlgo in RatingEvaluator.evaluationAlgorithms.keys():
-                results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
-                                                                    *RatingEvaluator.evaluationAlgorithms[eAlgo])
-            for eAlgo in self.testDependantEvalAlgorithms:
-                results[eAlgo] = RatingEvaluator.rating_evaluation(self.dictArrs[strAlgoname][i], self.dictArrs["Base"][i],
-                                                                    *self.arrsEvalAlgorithmsByTest[i][eAlgo])
-            self.dictResults[strAlgoname][i] = results
+            for eAlgo in self.evaluationAlgorithms.values():
+                results[eAlgo.name] = eAlgo(self.arrays[algorithmName][i], self.arrays["Base"][i])
+
+            for eAlgo in self.evaluationAlgorithmByTest.values():
+                results[eAlgo[i].name] = eAlgo[i](self.arrays[algorithmName][i], self.arrays["Base"][i])
+            self.results[algorithmName][i] = results
 
     def EvaluateAllAlgorithms(self):
         for algo in self.predictionAlgorithms:
@@ -93,25 +112,25 @@ class RatingEvaluator:
 
     def FormatResults(self):
         output = ""
-        for rAlgo in sorted(self.dictResults.keys()):
+        for rAlgo in sorted(self.results.keys()):
             output += rAlgo
             output += "\n---\n"
-            for eAlgo in sorted(RatingEvaluator.evaluationAlgorithms.keys()) + self.testDependantEvalAlgorithms:
+            for eAlgo in sorted(list(self.evaluationAlgorithms.keys()) + list(self.evaluationAlgorithmByTest.keys())):
                 output += eAlgo
                 output += ":\n"
-                for i in self.numTests:
+                for i in self.testIndexes:
                     output += str(i)
                     output += ". "
-                    output += str(self.dictResults[rAlgo][i][eAlgo])
+                    output += str(self.results[rAlgo][i][eAlgo])
                     output += "\n"
             output += "---\n\n"
         return output
 
-    def LogResults(self, strDescription):
+    def LogResults(self, description):
         output = ""
         output += time.ctime()
         output += "\nDescription: "
-        output += strDescription
+        output += description
         output += "\n\n"
         output += self.FormatResults()
         logfile = open("EvaluationLog.txt", "a")
