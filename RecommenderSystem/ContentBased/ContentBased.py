@@ -1,5 +1,6 @@
 from Profiling import *
 import numpy
+import Evaluation
 
 
 def write_matrix(m, file, test_set):
@@ -20,6 +21,7 @@ def calculate_recommendation_matrix(test_set):
     R = [[0.0 for x in range(len(movie_profiles))] for x in range(len(user_profiles))]
 
     for user in user_profiles:
+        print("Calculating ratings for user: " + str(user.user.id) + "/" + str(len(user_profiles)))
         u_vectors = {}
         for vector in user.vectors:
             u_vectors[vector] = numpy.array(user.vectors[vector].copy())
@@ -70,7 +72,11 @@ def similarity(x, y):
     return numpy.dot(x, y)/(math.sqrt(sum([pow(xi, 2) for xi in x])) * math.sqrt(sum([pow(yi, 2) for yi in y])))
 
 calculate_recommendation_matrix("Test1")
-calculate_recommendation_matrix("Test2")
-calculate_recommendation_matrix("Test3")
-calculate_recommendation_matrix("Test4")
-calculate_recommendation_matrix("Test5")
+#calculate_recommendation_matrix("Test2")
+#calculate_recommendation_matrix("Test3")
+#calculate_recommendation_matrix("Test4")
+#calculate_recommendation_matrix("Test5")
+
+evaluator = Evaluation.RatingEvaluator(["ContentBased"], 1)
+evaluator.EvaluateAllAlgorithms()
+evaluator.LogResults("ContentBased Exponential")

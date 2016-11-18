@@ -8,11 +8,9 @@ class UserProfile:
         self.vectors = {}
         for rating in self.user.rated_genres:
             metric = self.user.rated_genres[rating]
-            highest_genre = sorted(metric, reverse=True)[0]
-            if not highest_genre == 0.0:
-                self.vectors[rating] = [x/highest_genre for x in metric]
-            else:
-                self.vectors[rating] = [0.0 for x in range(19)]
+            highest = sorted(metric, reverse=True)[0]
+            metric = [x/highest if highest > 0.0 else 0.0 for x in metric]
+            self.vectors[rating] = [pow(x, 4) for x in metric]
 
 
 class MovieProfile:
@@ -50,10 +48,12 @@ def profile_movies_and_users(test_set):
     R, M, U = get_data(test_set)
     user_profiles = []
     for user in U:
+        print("Profiling user: " + str(user.id) + "/" + str(len(U)))
         user_profiles.append(UserProfile(user))
 
     movie_profiles = []
     for movie in M:
+        print("Profiling movie: " + str(movie.id) + "/" + str(len(M)))
         movie_profiles.append(MovieProfile(movie))
 
     return movie_profiles, user_profiles

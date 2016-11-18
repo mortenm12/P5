@@ -120,6 +120,6 @@ class RatingEvaluator:
             logfile.close()
 
 
-evaluator = RatingEvaluator(["NearestNeighbour", "Matrix Factorization"], 1)
-evaluator.EvaluateAllAlgorithms()
-evaluator.LogResults(input("Evaluation Description:\n"))
+#evaluator = RatingEvaluator(["NearestNeighbour", "Matrix Factorization"], 1)
+#evaluator.EvaluateAllAlgorithms()
+#evaluator.LogResults(input("Evaluation Description:\n"))
