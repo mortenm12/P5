@@ -6,26 +6,41 @@ from DataAPI import *
 
 class EvaluationAlgorithm:
 
-    #All our algorithms are prefabs with a functionGenerator and a boolean value indicating weather they are testdependant or not.
+    AE = lambda a, b: abs(a - b)
+    SE = lambda a, b: (a - b) ** 2
+
+    # All our algorithms are prefabs with a functionGenerator, a boolean value indicating weather they are testdependant or not and optional parameters.
 
     prefabs = {}
 
-    prefabs["MAE"] = ("MAE", lambda args: (lambda a, b: abs(a - b), lambda arr: np.mean(arr)), False, None)
+    prefabs["MAE"] = ("MAE", lambda args: (EvaluationAlgorithm.AE, lambda arr: np.mean(arr)), False, None)
 
-    prefabs["RMSE"] = ("RMSE", lambda args: (lambda a, b: (a - b) ** 2, lambda arr: np.mean(arr) ** 0.5), False, None)
+    prefabs["RMSE"] = ("RMSE", lambda args: (EvaluationAlgorithm.SE, lambda arr: np.mean(arr) ** 0.5), False, None)
 
     #testArray gets preprocessed into user-/movieTests using partial. This makes the conversion happen only once and not every evaluation.
-    prefabs["MUIWAE"] = ("MUIWAE", lambda testArray, args: ft.partial(lambda userRatings: (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr))))),
+    prefabs["MUIWAE"] = ("MUIWAE", lambda testArray, args: ft.partial(lambda userRatings: (EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr))))),
                                            userRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 0) + 1))), True, None)
 
-    prefabs["MMIWAE"] = ("MMIWAE", lambda testArray, args: ft.partial(lambda movieRatings: (lambda a, b: abs(a - b), lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr))))),
+    prefabs["MMIWAE"] = ("MMIWAE", lambda testArray, args: ft.partial(lambda movieRatings: (EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr))))),
                                            movieRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 1) + 1)).T), True, None)
 
-    prefabs["RMUIWSE"] = ("RMUIWSE", lambda testArray, args: ft.partial(lambda userRatings: (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr)))) ** 0.5),
+    prefabs["RMUIWSE"] = ("RMUIWSE", lambda testArray, args: ft.partial(lambda userRatings: (EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (userRatings / npm.mean(userRatings * np.ones_like(arr)))) ** 0.5),
                                            userRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 0) + 1))), True, None)
 
-    prefabs["RMMIWSE"] = ("RMMIWSE", lambda testArray, args: ft.partial(lambda movieRatings: (lambda a, b: (a - b) ** 2, lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr)))) ** 0.5),
+    prefabs["RMMIWSE"] = ("RMMIWSE", lambda testArray, args: ft.partial(lambda movieRatings: (EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (movieRatings / npm.mean(movieRatings * np.ones_like(arr)))) ** 0.5),
                                            movieRatings = np.atleast_2d(np.reciprocal(np.sum(testArray, 1) + 1)).T), True, None)
+
+    prefabs["UISMAE"] = ("UISMAE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(arrayMask, arr))),
+                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(testArray, 0), *args))), testArray.shape)), True)
+
+    prefabs["MISMAE"] = ("MISMAE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(arrayMask, arr))),
+                                            arrayMask=np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(testArray, 1), *args))).T, testArray.shape)), True)
+
+    prefabs["UISRMSE"] = ("UISRMSE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(arrayMask, arr)) ** 0.5),
+                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(testArray, 0), *args))), testArray.shape)), True)
+
+    prefabs["MISRMSE"] = ("MISRMSE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(arrayMask, arr)) ** 0.5),
+                                            arrayMask=np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(testArray, 1), *args))).T, testArray.shape)), True)
 
     def __init__(self, mappingFunction, foldingFunction, name):
         self.mappingFunction = mappingFunction
@@ -137,7 +152,6 @@ class RatingEvaluator:
         logfile.write(output)
         if not logfile.closed:
             logfile.close()
-
 
 evaluator = RatingEvaluator(["Matrix Factorization"], [1])
 evaluator.EvaluateAllAlgorithms()
