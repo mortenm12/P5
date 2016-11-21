@@ -14,7 +14,7 @@ def cos(a, b):
     else:
         raise Exception("a and b must be of the same length")
 
-    if len(a) != 0:
+    if len(a) != 0 and len(b) != 0:
         return sum / (length(a) * length(b))
     else:
         return 0
@@ -29,38 +29,43 @@ def length(vector):
     return math.sqrt(sum)
 
 
-def weight(user1, user2, ratings, movies, average_array):
+def weight(user1, user2, ratings, movies, user_average_array):
     movie_ratings = [[],[]]
 
     for movie in movies:
         if ratings[user1 - 1][movie - 1] != 0.0 and ratings[user2 - 1][movie - 1] != 0.0:
-            movie_ratings[0].append(ratings[user1 - 1][movie - 1] - average_array[user1 - 1])
-            movie_ratings[1].append(ratings[user2 - 1][movie - 1] - average_array[user2 - 1])
+            movie_ratings[0].append(ratings[user1 - 1][movie - 1] - (user_average_array[user1 - 1] - all_average))
+            movie_ratings[1].append(ratings[user2 - 1][movie - 1] - (user_average_array[user2 - 1] - all_average))
 
     return cos(movie_ratings[0], movie_ratings[1])
 
 
-def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, average_array):
+def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_average_array):
     weight_rating_tuples = []
     for user2 in users:
         if user2 != user1 and ratings[user2 - 1][movie - 1] != 0.0:
-            weight_rating_tuples.append([weight_matrix[user1 - 1][user2 - 1], ratings[user2 - 1][movie - 1] - average_array[user2 - 1]])
+            weight_rating_tuples.append([weight_matrix[user1 - 1][user2 - 1], ratings[user2 - 1][movie - 1] - user_average_array[user2 - 1]])
 
     sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
     return sorted_array[-k:]
 
 
-def rate(movie, user, users, ratings, weight_matrix, average_array):
-    weight_rating_tuples = k_nearest_neighbour(movie, user, 20, ratings, users, weight_matrix, average_array)
+def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average):
+    k = 40
+    weight_rating_tuples = k_nearest_neighbour(movie, user, k, ratings, users, weight_matrix, user_average_array)
     sum1 = 0
     sum2 = 0
+    if len(weight_rating_tuples) == 0:
+
+        return all_average + (user_average_array[user - 1] - all_average) + (movie_average_array[movie - 1] - all_average)
+
     for x in weight_rating_tuples:
         sum1 += x[0] * x[1]
         sum2 += x[0]
     if sum2 != 0:
-        return (sum1/sum2) + average_array[user - 1]
+        return (sum1/sum2) + user_average_array[user - 1]
     else:
-        return sum1 + average_array[user - 1]
+        return sum1 + user_average_array[user - 1]
 
 
 def format_time(t):
@@ -96,21 +101,54 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array):
     return weight_matrix
 
 
-def calculate_average_rating(movies, ratings, users):
-    average_array = []
-    sum1 = 0
+def calculate_user_average_rating(movies, ratings, users, all_average):
+    user_average_array = []
+
     for user in range(len(users)):
         i = 0
+        sum1 = 0
         for movie in range(len(movies)):
+            if ratings[user][movie] != 0:
+                sum1 += ratings[user][movie]
+                i += 1
+        if i != 0:
+            user_average_array.insert(user, sum1 / i)
+
+        else:
+            user_average_array.insert(user, all_average)
+
+
+    return user_average_array
+
+
+def calculate_movie_average_rating(movies, ratings, users, all_average):
+    average_array = []
+
+    for movie in range(len(movies)):
+        i = 0
+        sum1 = 0
+        for user in range(len(users)):
             if ratings[user][movie] > 0:
                 sum1 += ratings[user][movie]
                 i += 1
         if i != 0:
-            average_array.insert(user, sum1 / i)
+            average_array.insert(movie, sum1 / i)
         else:
-            average_array.insert(user, 3)
+            average_array.insert(movie, all_average)
 
     return average_array
+
+
+def calculate_all_average(users, movies, ratings):
+    i = 0
+    sum1 = 0
+    for user in users:
+        for movie in movies:
+            if ratings[user - 1][movie - 1] > 0:
+                i += 1
+                sum1 += ratings[user - 1][movie - 1]
+    print(sum1/i)
+    return sum1 / i
 
 
 
@@ -125,8 +163,10 @@ for x in range(1, 6):
 
     i = 0
     rated = ratings
-    average_array = calculate_average_rating(movies, ratings, users)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, average_array)
+    all_average = calculate_all_average(users, movies, ratings)
+    user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
+    movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array)
     starting_time = time.time()
     for user in users:
         i += 1
@@ -139,7 +179,7 @@ for x in range(1, 6):
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, average_array))
+                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
 
     for user in users:
         for movie in movies:
