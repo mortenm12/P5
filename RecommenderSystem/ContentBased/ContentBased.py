@@ -35,6 +35,7 @@ def calculate_recommendation_matrix(test_set):
     write_matrix(R, "ratings.data", test_set)
 
 
+"""
 def calculate_n_recommendations(user_id, n):
     movie_profiles = profile_movies()
     user_profile = profile_single_user(user_id)
@@ -53,8 +54,10 @@ def calculate_n_recommendations(user_id, n):
     ratings = sorted(ratings, key=lambda x: x[1] + x[2], reverse=True)
 
     return ratings[:n]
+"""
 
 
+"""
 def do_content_based_recommendations():
     print("What user do you want recommendations for?")
     s = input()
@@ -66,10 +69,7 @@ def do_content_based_recommendations():
     print("For user " + str(i) + ":")
     for recommendation in recommendations:
         print("Movie " + "{:4d}".format(recommendation[0]) + " rated " + "{:1.2f}".format(recommendation[1]) + " with weight " + "{:1.2f}".format(recommendation[2]))
-
-
-def similarity(x, y):
-    return numpy.dot(x, y)/(math.sqrt(sum([pow(xi, 2) for xi in x])) * math.sqrt(sum([pow(yi, 2) for yi in y])))
+"""
 
 calculate_recommendation_matrix("Test1")
 #calculate_recommendation_matrix("Test2")
