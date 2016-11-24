@@ -71,19 +71,19 @@ class EvaluationAlgorithm:
 
     #User-Ratings Sliced Mean Absolute Error
     prefabs["URSMAE"] = EvaluationAlgorithmPrefab("UISMAE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(arrayMask, arr))),
-                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 0), *args))), testArray.shape)), True)
+                                            arrayMask = np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 0), *args))), testArray.shape)), True)
 
     #Movie-Ratings Sliced Mean Absolute Error
     prefabs["MRSMAE"] = EvaluationAlgorithmPrefab("MISMAE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(arrayMask, arr))),
-                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 1), *args))).T, testArray.shape)), True)
+                                            arrayMask = np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 1), *args))).T, testArray.shape)), True)
 
     #User-Ratings Sliced Root Mean Square Error
     prefabs["URSRMSE"] = EvaluationAlgorithmPrefab("UISRMSE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(arrayMask, arr)) ** 0.5),
-                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 0), *args))), testArray.shape)), True)
+                                            arrayMask = np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 0), *args))), testArray.shape)), True)
 
     #Movie-Ratings Sliced Root Mean Square Error
     prefabs["MRSRMSE"] = EvaluationAlgorithmPrefab("MISRMSE", lambda testArray, args: ft.partial(lambda arrayMask: (EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(arrayMask, arr)) ** 0.5),
-                                            arrayMask = np.resize(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 1), *args))).T, testArray.shape)), True)
+                                            arrayMask = np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(testArray), 1), *args))).T, testArray.shape)), True)
 
     '''
     PARAMETERS:
