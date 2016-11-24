@@ -127,6 +127,13 @@ class RatingEvaluator:
         (EvaluationAlgorithm.prefabs["RMMRWSE"], None)
     ]
 
+    @staticmethod
+    def formatName(name, args):
+        if args == None:
+            return name
+        else:
+            return name + str(args)
+
     '''
     PARAMETERS:
     predictionAlgorithms: List of names of predictionAlgorithms to evaluate
@@ -157,21 +164,24 @@ class RatingEvaluator:
         #Only select the prefabs marked as test-independent
         for algo in filter(lambda algo: algo[0].testDependent == False, evaluationAlgorithms):
             #Make an evaluation-algorithm from the prefab
+            name = RatingEvaluator.formatName(algo[0].name, algo[1])
             mappingFunction, foldingFunction = algo[0].functionGenerator(algo[1])
-            self.evaluationAlgorithms[algo[0].name] = EvaluationAlgorithm(mappingFunction, foldingFunction, algo[0].name)
+            self.evaluationAlgorithms[name] = EvaluationAlgorithm(mappingFunction, foldingFunction, name)
 
         #Prepare test-dependent evaluation-algorithms
         self.evaluationAlgorithmByTest = {}
         #Only select the prefabs marked as test-dependent
         for algo in filter(lambda algo: algo[0].testDependent == True, evaluationAlgorithms):
-            self.evaluationAlgorithmByTest[algo[0].name] = {}
+            name = RatingEvaluator.formatName(algo[0].name, algo[1])
+            self.evaluationAlgorithmByTest[name] = {}
         for i in testIndexes:
             testArray = np.array(read_ratings("Test" + str(i)), np.float)
             #Again, only select the prefabs marked as test-dependent
             for algo in filter(lambda algo: algo[0].testDependent == True, evaluationAlgorithms):
                 # Make an evaluation-algorithm from the prefab. The parameterless call performs the pre-processing.
                 mappingFunction, foldingFunction = algo[0].functionGenerator(testArray, algo[1])()
-                self.evaluationAlgorithmByTest[algo[0].name][i] = EvaluationAlgorithm(mappingFunction, foldingFunction, algo[0].name)
+                name = RatingEvaluator.formatName(algo[0].name, algo[1])
+                self.evaluationAlgorithmByTest[name][i] = EvaluationAlgorithm(mappingFunction, foldingFunction, name)
 
     def ReadBaseArrays(self):
         self.arrays["Base"] = {}
