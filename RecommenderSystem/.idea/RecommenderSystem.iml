@@ -10,8 +10,12 @@
       <sourceFolder url="file://$MODULE_DIR$/NearestNeighbour" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/NearestNeighbourItemItem" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ContentBased" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/v2.1NearestNeighbour" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/v2.0NearestNeighbour" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Weighted Content Based" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Matrix Factorization V.2" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.5.2 (/usr/bin/python3.5)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.5.2 (E:\Python\python.exe)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

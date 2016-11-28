@@ -78,6 +78,7 @@ def recommend(user1, movie, list_of_users):  # page 115
     else:
         return (sum1 / sum2) + mean_center(user1, movie, list_of_users)
 
+
 def format_time(t):
     if t < 1:
         return "00:00:00"

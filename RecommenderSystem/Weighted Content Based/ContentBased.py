@@ -10,17 +10,19 @@ class UserProfile:
         self.relevant_vector = [0 for x in range(19)]
         self.irrelevant_vector = [0 for x in range(19)]
 
-
     # Calculate the relevant and irrelevant genres for the user.
     def calculate_relevancy_vectors(self, ratings, movies):
         genre_totals = [0 for x in range(19)]
         genre_sums = [0 for x in range(19)]
+
         for j in range(len(ratings[0])):
             if ratings[self.user.id - 1][j] > 0:
                 for genre in movies[j].genres:
                     genre_totals[genre] += ratings[self.user.id - 1][j]
                     genre_sums[genre] += 1
+
         genre_averages = [genre_totals[i]/genre_sums[i] if genre_sums[i] > 0 else 0 for i in range(19)]
+
         for i in range(len(genre_averages)):
             if genre_averages[i] > 3:
                 self.relevant_vector[i] = 1
@@ -35,6 +37,7 @@ class MovieProfile:
     def __init__(self, movie):
         self.movie = movie
         self.vector = [0 for x in range(19)]
+
         for genre in self.movie.genres:
             self.vector[genre] = 1
 
@@ -45,6 +48,7 @@ class MovieProfile:
 def similarity(x, y):
     len_x = length(x)
     len_y = length(y)
+
     if len_x == 0 or len_y == 0:
         return 0
     else:
@@ -73,6 +77,7 @@ def calculate_rating(user_profile, movie_profile):
 def write_matrix(m, file, test_set):
     result = open("Output/" + test_set + "/" + file, "w")
     result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
+
     for i in range(0, len(m)):
         result.write("{:>4d}, ".format(i + 1))
         result.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
@@ -94,6 +99,7 @@ def calculate_recommendation_matrix(test_set):
     # Generate movie and user profiles.
     movie_profiles = [MovieProfile(movie) for movie in M]
     user_profiles = [UserProfile(user) for user in U]
+
     for profile in user_profiles:
         print("Generating preferences for user: " + str(profile.user.id))
         profile.calculate_relevancy_vectors(R, M)
@@ -101,6 +107,7 @@ def calculate_recommendation_matrix(test_set):
     # Calculate each rating for each user/item pair.
     for i in range(len(R)):
         print("Calculating ratings for user: " + str(i + 1))
+
         for j in range(len(R[0])):
             # if R[i][j] > 0:
                 # result[i][j] = R[i][j]
@@ -116,5 +123,5 @@ calculate_recommendation_matrix("Test4")
 calculate_recommendation_matrix("Test5")
 
 evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], 5)
-evaluator.EvaluateAllAlgorithms()
-evaluator.LogResults("Weighted Content Based Test")
+evaluator.evaluate_all_algorithms()
+evaluator.log_results("Weighted Content Based Test")

@@ -1,6 +1,7 @@
 from DataAPI import read_movies_as_object_list, read_users_as_object_list, read_ratings
 
 
+# Calculates the amount of ratings and the average rating for each movie.
 def calculate_rating_amount(movies, ratings):
     movie_ratings = []
     for j in range(len(ratings[0])):
@@ -18,6 +19,7 @@ def calculate_rating_amount(movies, ratings):
     return movies
 
 
+# Splits the movies into head and tail. OUTDATED!
 def calculate_head_and_tail(movies):
     sorted_movies = movies.copy()
     sorted_movies.sort(key=lambda x: x.number_of_ratings, reverse=True)
@@ -27,6 +29,7 @@ def calculate_head_and_tail(movies):
     return head, tail
 
 
+# Calculates the average rating for a user as well as the mount of ratings in both head and tail.
 def calculate_users_rating_habits(users, ratings, head, tail):
     for user in users:
         sum = 0
@@ -48,6 +51,7 @@ def calculate_users_rating_habits(users, ratings, head, tail):
     return users, sorted_users
 
 
+# Writes users rating habits, head and tail to files.
 def write_results_to_files(users, head, tail):
     result = open("FinalData/UserRatingDistribution.Data", "w", encoding='iso_8859_15')
     for user in users:
@@ -68,6 +72,7 @@ def write_results_to_files(users, head, tail):
         tail_file.close()
 
 
+# Calculates the average rating of a rating matrix R.
 def calculate_average_rating(R):
     sum = 0
     amount = 0
@@ -80,18 +85,21 @@ def calculate_average_rating(R):
     return sum / float(amount)
 
 
+# Calculates the bias for all users in U given the global average.
 def calculate_user_bias(U, average):
     for user in U:
         user.bias = user.average_rating - average
     return U
 
 
+# Calculates the bias for all movies in M given the global average.
 def calculate_movie_bias(M, average):
     for movie in M:
         movie.bias = movie.average_rating - average
     return M
 
 
+# Calculates a bunch of stuff.
 def calculate_extra_data(movies, users, ratings):
     movies = calculate_rating_amount(movies, ratings)
     head, tail = calculate_head_and_tail(movies)
@@ -102,6 +110,7 @@ def calculate_extra_data(movies, users, ratings):
     return users, movies, ratings
 
 
+# A main function to start calculating everything.
 def __main__():
     R = read_ratings("FullData")
     U = read_users_as_object_list()

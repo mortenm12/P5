@@ -169,5 +169,5 @@ for i in tests_to_run:
 
 # Automatically run evaluation on the output of the algorithm.
 evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], tests_to_run)
-evaluator.EvaluateAllAlgorithms()
-evaluator.LogResults("Evaluation Description: ")
+evaluator.evaluate_all_algorithms()
+evaluator.log_results("Evaluation Description: ")

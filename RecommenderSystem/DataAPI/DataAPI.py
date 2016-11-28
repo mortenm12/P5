@@ -1,6 +1,6 @@
-# Movie class with all content included
+# Movie data structure with all relevant data.
 class Movie:
-    def __init__(self, mid, name, genres=None, actors=None, directors=None, date=None):
+    def __init__(self, mid, name, genres=None, date=None):
         self.name = name
         self.id = mid
         self.date = date
@@ -10,6 +10,7 @@ class Movie:
         self.bias = 0
 
 
+# User class with all relevant data and methods for calculating some of said data.
 class User:
     # u_id is every user identification number
     def __init__(self, u_id):
@@ -23,9 +24,11 @@ class User:
         self.ratings_in_tail = 0
         self.bias = 0
 
+    # Calculates the total amount of ratings.
     def total_ratings(self):
         return self.ratings_in_head + self.ratings_in_tail
 
+    # Calculates the percentage of ratings in the tail.
     def percent_ratings_in_tail(self):
         if self.ratings_in_head > 0 and self.ratings_in_tail > 0:
             return float(self.ratings_in_tail) / float(self.ratings_in_head + self.ratings_in_tail)
@@ -61,6 +64,7 @@ def read_genres_as_dict():
     return genres
 
 
+# Returns the number of actors.
 def get_actor_count():
     file = open("../FullData/Actors.data", "r", encoding="iso_8859_15")
     i = 0
@@ -73,6 +77,7 @@ def get_actor_count():
     return i
 
 
+# Returns the number of directors.
 def get_director_count():
     file = open("../FullData/Directors.data", "r", encoding="iso_8859_15")
     i = 0
@@ -87,6 +92,8 @@ def get_director_count():
 
 # Read movies as a list of Movie objects with all data included
 def read_movies_as_object_list():
+
+    # Read genres to dictionary.
     genres_dict = {}
     genres_file = open("../FullData/Genres.data", "r", encoding='iso_8859_15')
     for line in genres_file:
@@ -96,6 +103,7 @@ def read_movies_as_object_list():
     if not genres_file.closed:
         genres_file.close()
 
+    # Read movies.
     movies_file = open("../FullData/Movies.data", "r", encoding='iso_8859_15')
     movies = []
     for line in movies_file:
@@ -104,15 +112,7 @@ def read_movies_as_object_list():
             genres = [int(x) for x in parts[3].split(',')]
         else:
             genres = []
-        if parts[4] != '':
-            actors = [int(x) for x in parts[4].split(',')]
-        else:
-            actors = []
-        if parts[5] != '':
-            directors = [int(x) for x in parts[5].split(',')]
-        else:
-            directors = []
-        movies.append(Movie(int(parts[0]), parts[1], genres, actors, directors))
+        movies.append(Movie(int(parts[0]), parts[1], genres))
 
     if not movies_file.closed:
         movies_file.close()

@@ -3,8 +3,6 @@ import math
 import time
 
 
-
-
 def cos(a, b):
     sum = 0
 
@@ -30,7 +28,7 @@ def length(vector):
 
 
 def weight(user1, user2, ratings, movies):
-    movie_ratings = [[],[]]
+    movie_ratings = [[], []]
 
     for movie in movies:
         if ratings[user1 - 1][movie - 1] != 0.0 and ratings[user2 - 1][movie - 1] != 0.0:
@@ -42,11 +40,13 @@ def weight(user1, user2, ratings, movies):
 
 def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix):
     weight_rating_tuples = []
+
     for user2 in users:
         if user2 != user1 and ratings[user2 - 1][movie - 1] != 0.0:
             weight_rating_tuples.append([weight_matrix[user1 - 1][user2 - 1], ratings[user2 - 1][movie - 1]])
 
     sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
+
     return sorted_array[-k:]
 
 
@@ -54,6 +54,7 @@ def rate(movie, user, users, ratings, weight_matrix):
     weight_rating_tuples = k_nearest_neighbour(movie, user, 80, ratings, users, weight_matrix)
     sum1 = 0
     sum2 = 0
+
     for x in weight_rating_tuples:
         sum1 += x[0] * x[1]
         sum2 += x[0]
@@ -78,6 +79,7 @@ def format_time(t):
 def calculate_weight_matrix(movies, ratings, users, x):
     t_start = time.time()
     weight_matrix = []
+
     for i in range(len(movies)):
         weight_matrix.append([])
         for j in range(len(movies)):
@@ -89,6 +91,7 @@ def calculate_weight_matrix(movies, ratings, users, x):
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
         print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
               format_time(t_remaining))
+
         for user2 in users:
             if user1 != user2:
                 weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies)
@@ -97,7 +100,6 @@ def calculate_weight_matrix(movies, ratings, users, x):
 
 for x in range(1, 6):
     directory = "Test" + str(x)
-
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(directory)
@@ -106,6 +108,7 @@ for x in range(1, 6):
     rated = ratings
     weight_matrix = calculate_weight_matrix(movies, ratings, users, x)
     starting_time = time.time()
+
     for user in users:
         i += 1
 
@@ -128,6 +131,7 @@ for x in range(1, 6):
 
     output = open("Output/Test" + str(x) + "/ratings.data", "w")
     output.write("   ID, ")
+
     for movie in movies:
         output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
 
@@ -138,6 +142,7 @@ for x in range(1, 6):
         i += 1
         print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
+
         for movie in movies:
             output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
 
