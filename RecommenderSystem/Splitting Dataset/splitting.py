@@ -9,28 +9,20 @@ def get_head_and_tail(k):
         movies = DataAPI.read_movies_as_id_list()
         ratings = DataAPI.read_ratings(directory)
 
-        head = []
-        tail = []
+        head_movies = []
+        tail_movies = []
 
-        for i in range(0, len(users)):
-            head.append([])
-            tail.append([])
-            for j in range(0, len(movies)):
-                head[i].append(0.0)
-                tail[i].append(0.0)
 
-        for i in range(0, len(users)):
+        for j in range(0, len(movies)):
             sum1 = 0
-            for j in range(0,len(movies)):
+            for i in range(0,len(users)):
                 if ratings[i][j] > 0.0:
                     sum1 += 1
 
             if sum1 >= k:
-                for j in range(0, len(movies)):
-                    head[i][j] = ratings[i][j]
+                head_movies.append(j)
 
             else:
-                for j in range(0, len(movies)):
-                    tail[i][j] = ratings[i][j]
+                tail_movies.append(j)
 
-    return head, tail
+    return head_movies, tail_movies
