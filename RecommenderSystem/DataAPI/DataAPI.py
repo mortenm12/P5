@@ -1,6 +1,3 @@
-from AuxillaryMath import *
-
-
 # Movie class with all content included
 class Movie:
     def __init__(self, mid, name, genres=None, actors=None, directors=None, date=None):
@@ -8,8 +5,6 @@ class Movie:
         self.id = mid
         self.date = date
         self.genres = genres
-        self.actors = actors
-        self.directors = directors
         self.number_of_ratings = 0
         self.average_rating = 0
         self.bias = 0
@@ -22,9 +17,7 @@ class User:
         self.number_of_ratings = 0
         self.average_rating = 0
         self.rated_movies = {}
-        self.rated_genres = []
-        self.rated_actors = []
-        self.rated_directors = []
+        self.rated_genres = {}
         self.recommended = []
         self.ratings_in_head = 0
         self.ratings_in_tail = 0
@@ -207,9 +200,10 @@ def add_rating_metrics_to_users(movies, users, ratings):
     for user in users:
         user.number_of_ratings = 0
         user.average_rating = 0.0
-        user.rated_genres = [[0, 0, 0, 0, 0] for x in range(19)]
-        user.rated_actors = [[0, 0, 0, 0, 0] for x in range(get_actor_count())]
-        user.rated_directors = [[0, 0, 0, 0, 0] for x in range(get_director_count())]
+        for i in [1, 2, 3, 4, 5]:
+            user.rated_genres[i] = []
+            for j in range(19):
+                user.rated_genres[i].insert(j, 0)
 
     for i in range(len(ratings)):
         for j in range(len(ratings[0])):
@@ -218,40 +212,9 @@ def add_rating_metrics_to_users(movies, users, ratings):
                 users[i].average_rating += ratings[i][j]
 
                 for genre in movies[j].genres:
-                    if ratings[i][j] >= 5.0:
-                        users[i].rated_genres[genre][4] += 1
-                    elif ratings[i][j] >= 4.0:
-                        users[i].rated_genres[genre][3] += 1
-                    elif ratings[i][j] >= 3.0:
-                        users[i].rated_genres[genre][2] += 1
-                    elif ratings[i][j] >= 2.0:
-                        users[i].rated_genres[genre][1] += 1
-                    elif ratings[i][j] >= 1.0:
-                        users[i].rated_genres[genre][0] += 1
-
-                for actor in movies[j].actors:
-                    if ratings[i][j] >= 5.0:
-                        users[i].rated_actors[actor][4] += 1
-                    elif ratings[i][j] >= 4.0:
-                        users[i].rated_actors[actor][3] += 1
-                    elif ratings[i][j] >= 3.0:
-                        users[i].rated_actors[actor][2] += 1
-                    elif ratings[i][j] >= 2.0:
-                        users[i].rated_actors[actor][1] += 1
-                    elif ratings[i][j] >= 1.0:
-                        users[i].rated_actors[actor][0] += 1
-
-                for director in movies[j].directors:
-                    if ratings[i][j] >= 5.0:
-                        users[i].rated_directors[director][4] += 1
-                    elif ratings[i][j] >= 4.0:
-                        users[i].rated_directors[director][3] += 1
-                    elif ratings[i][j] >= 3.0:
-                        users[i].rated_directors[director][2] += 1
-                    elif ratings[i][j] >= 2.0:
-                        users[i].rated_directors[director][1] += 1
-                    elif ratings[i][j] >= 1.0:
-                        users[i].rated_directors[director][0] += 1
+                    rat = ratings[i][j]
+                    if rat > 0.0:
+                        users[i].rated_genres[int(rat)][genre] += 1
 
         if not users[i].number_of_ratings == 0:
             users[i].average_rating = float(users[i].average_rating / float(users[i].number_of_ratings))
