@@ -15,24 +15,32 @@ def Division(usernr, head_movies, tail_movies, movies, ratings):
                 tail += 1
 
             else:
-                #well, fuck
+                raise ValueError("well, fuck")
 
     if head + tail == sum1:
         return head/sum1, tail/sum1
 
     else:
-        #well, fuck
+        raise ValueError("well, fuck")
 
 
-def recommend(usernr, movies, ratings, movies, users, new_ratings, k):
+def recommend(usernr, old_ratings, movies, new_ratings, k):
     head_movies, tail_movies = splitting.get_head_and_tail(80)
-    head_percent, tail_percent = Division(usernr, head_movies,tail_movies, movies, ratings)
+    head_percent, tail_percent = Division(usernr, head_movies, tail_movies, movies, old_ratings)
 
-    head_movies = []
-    for movie in head_movies):
-        head_movies.append([new_ratings[usernr][movie], movie])
+    head_tuple = []
+    for movie in head_movies:
+        head_tuple.append([new_ratings[usernr][movie], movie])
 
-    head_movies.sort()
+    head_tuple.sort(key=lambda x: x[0], reverse=True)
+
+    tail_tuple = []
+    for movie in tail_movies:
+        tail_tuple.append([new_ratings[usernr][movie], movie])
+
+    tail_tuple.sort(key=lambda x: x[0], reverse=True)
+
+    return head_tuple[:head_percent * k][1] + tail_tuple[:tail_percent * k][1]
 
 
 
