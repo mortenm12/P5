@@ -74,25 +74,25 @@ class EvaluationAlgorithm:
         # User-Ratings Sliced Mean Absolute Error
         "URSMAE": EvaluationAlgorithmPrefab("URSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
-            arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Mean Absolute Error
         "MRSMAE": EvaluationAlgorithmPrefab("MRSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
-            arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True),
 
         # User-Ratings Sliced Root Mean Square Error
         "URSRMSE": EvaluationAlgorithmPrefab("URSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
-            arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Root Mean Square Error
         "MRSRMSE": EvaluationAlgorithmPrefab("MRSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
-            arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True)
     }
 
@@ -169,17 +169,17 @@ class RatingEvaluator:
         self.evaluation_algorithms = {}
 
         # Only select the prefabs marked as test-independent
-        for algorithm in filter(lambda algo: not algo[0].testDependent, evaluation_algorithms):
+        for algorithm in filter(lambda algo: not algo[0].test_dependent, evaluation_algorithms):
             # Make an evaluation-algorithm from the prefab
             name = RatingEvaluator.format_name(algorithm[0].name, algorithm[1])
-            mapping_function, folding_function = algorithm[0].functionGenerator(algorithm[1])
+            mapping_function, folding_function = algorithm[0].function_generator(algorithm[1])
             self.evaluation_algorithms[name] = EvaluationAlgorithm(mapping_function, folding_function, name)
 
         # Prepare test-dependent evaluation-algorithms
         self.evaluation_algorithm_by_test = {}
 
         # Only select the prefabs marked as test-dependent
-        for algorithm in filter(lambda algo: algo[0].testDependent, evaluation_algorithms):
+        for algorithm in filter(lambda algo: algo[0].test_dependent, evaluation_algorithms):
             name = RatingEvaluator.format_name(algorithm[0].name, algorithm[1])
             self.evaluation_algorithm_by_test[name] = {}
 
@@ -187,9 +187,9 @@ class RatingEvaluator:
             test_array = np.array(read_ratings("Test" + str(i)), np.float)
 
             # Again, only select the prefabs marked as test-dependent
-            for algorithm in filter(lambda algo: algo[0].testDependent, evaluation_algorithms):
+            for algorithm in filter(lambda algo: algo[0].test_dependent, evaluation_algorithms):
                 # Make an evaluation-algorithm from the prefab. The parameter-less call performs the pre-processing.
-                mapping_function, folding_function = algorithm[0].functionGenerator(test_array, algorithm[1])()
+                mapping_function, folding_function = algorithm[0].function_generator(test_array, algorithm[1])()
                 name = RatingEvaluator.format_name(algorithm[0].name, algorithm[1])
                 self.evaluation_algorithm_by_test[name][i] = EvaluationAlgorithm(mapping_function, folding_function, name)
 
@@ -253,6 +253,12 @@ class RatingEvaluator:
         if not logfile.closed:
             logfile.close()
 
-#evaluator = RatingEvaluator(["Matrix Factorization"], [1])
-#evaluator.evaluate_all_algorithms()
-#evaluator.log_results(input("Evaluation Description:\n"))
+evaluationAlgoritms = [
+    (EvaluationAlgorithm.prefabs["URSMAE"], (0,5)),
+    (EvaluationAlgorithm.prefabs["MRSMAE"], (0,5)),
+    (EvaluationAlgorithm.prefabs["URSRMSE"], (0,5)),
+    (EvaluationAlgorithm.prefabs["MRSRMSE"], (0,5))
+]
+evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour"], range(1, 6), evaluationAlgoritms)
+evaluator.evaluate_all_algorithms()
+evaluator.log_results(input("Evaluation Description:\n"))
