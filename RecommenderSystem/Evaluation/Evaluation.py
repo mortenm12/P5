@@ -259,6 +259,6 @@ evaluationAlgoritms = [
     (EvaluationAlgorithm.prefabs["URSRMSE"], (0,5)),
     (EvaluationAlgorithm.prefabs["MRSRMSE"], (0,5))
 ]
-evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour"], range(1, 6), evaluationAlgoritms)
+evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour", "Baseline", "Matrix Factorization", "Matrix Factorization V.2"], range(1, 6), evaluationAlgoritms)
 evaluator.evaluate_all_algorithms()
 evaluator.log_results(input("Evaluation Description:\n"))
