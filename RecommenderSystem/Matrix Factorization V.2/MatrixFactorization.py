@@ -1,5 +1,5 @@
 """
-Implementation of biased Matrix Factorization by Rasmus Jensen
+Implementation of biased Matrix Factorization
 """
 # Imports
 from DataAPI import *
@@ -18,9 +18,10 @@ import copy
 #   K, the amount of latent factors.
 #
 # And has 3 other default parameters:
-#   steps, the amount of iteration the algorithm will run for.
+#   steps, the amount of iterations the algorithm will run for.
 #   alpha, the approximation variable, defining how fast the algorithm converges.
 #   beta, the normalization variable, defining how much to avoid overfitting.
+
 def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
     # Transposes the Q matrix, so the dot product of P and Q can be taken.
     Q = Q.T
