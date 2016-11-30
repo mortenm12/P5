@@ -27,102 +27,93 @@ class EvaluationAlgorithm:
         # Root Mean Squared Error
         "RMSE": EvaluationAlgorithmPrefab("RMSE", lambda args: (EvaluationAlgorithm.SE, lambda arr: np.mean(arr) ** 0.5), False),
 
-        '''
-        In the weighted measures, a weight array is multiplied with the error-array
-        The weight array is calculated as follows:
-        np.sign is used on testArray to make an array that contains a 1 if a rating exists and a 0 otherwise.
-        The sum across an axis in this array finds the amount of ratings of each user/movie which is used to make the initial weight array.
-        This is pre-processed using functools.partial, since this part of the calculation is independent of the error-array.
-        A copy of the error-array with entries replaced with 1s are then multiplied with the weight array.
-        This is needed to account for the invalid data, which makes some weights used more than others.
-        The average over this resulting array is then the average of the weights.
-        The initial weight array is then divided by this average resulting in the final weight array.
-        '''
+        # In the weighted measures, a weight array is multiplied with the error-array
+        # The weight array is calculated as follows:
+        # np.sign is used on testArray to make an array that contains a 1 if a rating exists and a 0 otherwise.
+        # The sum across an axis in this array finds the amount of ratings of each user/movie which is used to make the initial weight array.
+        # This is pre-processed using functools.partial, since this part of the calculation is independent of the error-array.
+        # A copy of the error-array with entries replaced with 1s are then multiplied with the weight array.
+        # This is needed to account for the invalid data, which makes some weights used more than others.
+        # The average over this resulting array is then the average of the weights.
+        # The initial weight array is then divided by this average resulting in the final weight array.
 
         # Partial allows us to pre-process part of the generated function, so that it happens only once and not every
         # evaluation.
         # Mean User-Ratings Weighted Absolute Error
-        "MURWAE": EvaluationAlgorithmPrefab("MUIWAE", lambda test_array, args: ft.partial(lambda weights: (
+        "MURWAE": EvaluationAlgorithmPrefab("MURWAE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr))))),
             weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1))), True),
 
         # Mean Movie-Ratings Weighted Absolute Error
-        "MMRWAE": EvaluationAlgorithmPrefab("MMIWAE", lambda test_array, args: ft.partial(lambda weights: (
+        "MMRWAE": EvaluationAlgorithmPrefab("MMRWAE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr))))),
             weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1)).T), True),
 
         # Root Mean User-Ratings Weighted Square Error
-        "RMURWSE": EvaluationAlgorithmPrefab("RMUIWSE", lambda test_array, args: ft.partial(lambda weights: (
+        "RMURWSE": EvaluationAlgorithmPrefab("RMURWSE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr)))) ** 0.5),
             weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1))), True),
 
         # Root Mean Movie-Ratings Weighted Square Error
-        "RMMRWSE": EvaluationAlgorithmPrefab("RMMIWSE", lambda test_array, args: ft.partial(lambda weights: (
+        "RMMRWSE": EvaluationAlgorithmPrefab("RMMRWSE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr)))) ** 0.5),
             weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1)).T), True),
 
-        '''
-        In the sliced measures, a mask is applied to the error-array to ignore the ratings of users/movies with an amount
-        of ratings outside a given boundary.
-        This mask is calculated as follows:
-        np.sign is used on testArray to make an array that contains a 1 if a rating exists and a 0 otherwise.
-        The sum across an axis in this array finds the amount of ratings of each user/movie.
-        This array is then masked out where the amount of ratings is outside the given boundaries.
-        The mask of the array is pre-processed using functools.partial, since this part of the calculation is
-        independent of the error-array.
-        The mask is then changed in size and applied to the error-array.
-        Since the indexes of both arrays correlates with the same user/movie, applying this mask to the error-array
-        makes it ignore the ratings of these users/movies.
-        '''
+        # In the sliced measures, a mask is applied to the error-array to ignore the ratings of users/movies with an amount
+        # of ratings outside a given boundary.
+        # This mask is calculated as follows:
+        # np.sign is used on testArray to make an array that contains a 1 if a rating exists and a 0 otherwise.
+        # The sum across an axis in this array finds the amount of ratings of each user/movie.
+        # This array is then masked out where the amount of ratings is outside the given boundaries.
+        # The mask of the array is pre-processed using functools.partial, since this part of the calculation is
+        # independent of the error-array.
+        # The mask is then changed in size and applied to the error-array.
+        # Since the indexes of both arrays correlates with the same user/movie, applying this mask to the error-array
+        # makes it ignore the ratings of these users/movies.
 
         # User-Ratings Sliced Mean Absolute Error
-        "URSMAE": EvaluationAlgorithmPrefab("UISMAE", lambda test_array, args: ft.partial(lambda array_mask: (
+        "URSMAE": EvaluationAlgorithmPrefab("URSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
             arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Mean Absolute Error
-        "MRSMAE": EvaluationAlgorithmPrefab("MISMAE", lambda test_array, args: ft.partial(lambda array_mask: (
+        "MRSMAE": EvaluationAlgorithmPrefab("MRSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
             arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True),
 
         # User-Ratings Sliced Root Mean Square Error
-        "URSRMSE": EvaluationAlgorithmPrefab("UISRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
+        "URSRMSE": EvaluationAlgorithmPrefab("URSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
             arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Root Mean Square Error
-        "MRSRMSE": EvaluationAlgorithmPrefab("MISRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
+        "MRSRMSE": EvaluationAlgorithmPrefab("MRSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
             arrayMask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True)
-
     }
 
-    '''
-    PARAMETERS:
-    mapping_function and folding_function:
-    Functions used to map and fold during evaluation. These are usually made from a prefab functionGenerator
-    name: Name of the algorithm
-    '''
+    # PARAMETERS:
+    # mapping_function and folding_function:
+    # Functions used to map and fold during evaluation. These are usually made from a prefab functionGenerator
+    # name: Name of the algorithm
     def __init__(self, mapping_function, folding_function, name):
         self.mapping_function = mapping_function
         self.folding_function = folding_function
         self.name = name
 
-    '''
-    Calling an EvaluationAlgorithm:
-    Evaluates a prediction- and a base-array into an error measure
+    # Calling an EvaluationAlgorithm:
+    # Evaluates a prediction- and a base-array into an error measure
 
-    INPUT:
-    prediction_array: The prediction array.
-    base_array: The base-array.
+    # INPUT:
+    # prediction_array: The prediction array.
+    # base_array: The base-array.
 
-    OUTPUT:
-    Returns the resulting error measure.
-    '''
+    # OUTPUT:
+    # Returns the resulting error measure.
     def __call__(self, prediction_array, base_array):
         # Mask out all invalid ratings
         base_array = npm.masked_equal(base_array, 0)
@@ -150,12 +141,10 @@ class RatingEvaluator:
         else:
             return name + str(args)
 
-    '''
-    PARAMETERS:
-    predictionAlgorithms: List of names of predictionAlgorithms to evaluate
-    testIndexes: List of test-indexes for the tests used
-    evaluationAlgorithms (Optional): List of evaluation-algorithm prefabs to evaluate with.
-    '''
+    # PARAMETERS:
+    # predictionAlgorithms: List of names of predictionAlgorithms to evaluate
+    # testIndexes: List of test-indexes for the tests used
+    # evaluationAlgorithms (Optional): List of evaluation-algorithm prefabs to evaluate with.
     def __init__(self, prediction_algorithms, test_indexes, evaluation_algorithms=default_algorithms):
         self.test_indexes = test_indexes
 
@@ -172,10 +161,10 @@ class RatingEvaluator:
         self.prediction_algorithm_names = prediction_algorithms
         for algorithm in prediction_algorithms:
             self.read_prediction_arrays(algorithm)
-        '''
-        Test-dependent and test-independent evaluation-algorithms are prepared separately, since we only want to
-        prepare the same test-independent evaluation-algorithm once.
-        '''
+
+        # Test-dependent and test-independent evaluation-algorithms are prepared separately, since we only want to
+        # prepare the same test-independent evaluation-algorithm once.
+
         # Prepare test-independent evaluation-algorithms
         self.evaluation_algorithms = {}
 
@@ -218,10 +207,9 @@ class RatingEvaluator:
         self.results[algorithm_name] = {}
         for i in self.test_indexes:
             results = {}
-            '''
-            Test-dependent and test-independent evaluation-algorithms are used separately, since we only want to
-            evaluate with the same test-independent evaluation-algorithm once.
-            '''
+
+            # Test-dependent and test-independent evaluation-algorithms are used separately, since we only want to
+            # evaluate with the same test-independent evaluation-algorithm once.
             for evaluation_algorithm in self.evaluation_algorithms.values():
                 # Call the evaluation-algortihm with the prediction- and the base-array, and store the result.
                 results[evaluation_algorithm.name] = evaluation_algorithm(self.arrays[algorithm_name][i], self.arrays["Base"][i])
