@@ -4,7 +4,7 @@ import time
 
 
 
-
+#the cosine function takes a, and b which is a vector, and returns the angle between a and b, between -1 and 1
 def cos(a, b):
     sum = 0
 
@@ -20,6 +20,7 @@ def cos(a, b):
         return 0
 
 
+#lenght calculate the lenght of a vector
 def length(vector):
     sum = 0
 
@@ -29,6 +30,7 @@ def length(vector):
     return math.sqrt(sum)
 
 
+#The weight function returns the weight between user1 and user2
 def weight(user1, user2, ratings, movies, user_average_array):
     movie_ratings = [[],[]]
 
@@ -39,7 +41,7 @@ def weight(user1, user2, ratings, movies, user_average_array):
 
     return cos(movie_ratings[0], movie_ratings[1])
 
-
+#finds the k nearest neighbour, by the weight
 def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_average_array):
     weight_rating_tuples = []
     for user2 in users:
@@ -49,7 +51,7 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_ave
     sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
     return sorted_array[-k:]
 
-
+#Returns a rating for a user and a movie
 def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average):
     k = 40
     weight_rating_tuples = k_nearest_neighbour(movie, user, k, ratings, users, weight_matrix, user_average_array)
@@ -67,7 +69,7 @@ def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_a
     else:
         return sum1 + user_average_array[user - 1]
 
-
+#format an int in seconds, to a string formatted as time
 def format_time(t):
     if t < 1:
         return "00:00:00"
@@ -79,7 +81,7 @@ def format_time(t):
         s = h_rest % 60
         return "{:02d}".format(int(h)) + ":" + "{:02d}".format(int(m)) + ":" + "{:02d}".format(int(s))
 
-
+#Calculating the weight matrix
 def calculate_weight_matrix(movies, ratings, users, x, average_array):
     t_start = time.time()
     weight_matrix = []
@@ -100,7 +102,7 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array):
 
     return weight_matrix
 
-
+"return an array with all the users average ratings"
 def calculate_user_average_rating(movies, ratings, users, all_average):
     user_average_array = []
 
@@ -120,7 +122,7 @@ def calculate_user_average_rating(movies, ratings, users, all_average):
 
     return user_average_array
 
-
+#returns an array of all the movie average ratings
 def calculate_movie_average_rating(movies, ratings, users, all_average):
     average_array = []
 
@@ -138,7 +140,7 @@ def calculate_movie_average_rating(movies, ratings, users, all_average):
 
     return average_array
 
-
+#returens the average of all the ratings
 def calculate_all_average(users, movies, ratings):
     i = 0
     sum1 = 0
@@ -153,7 +155,7 @@ def calculate_all_average(users, movies, ratings):
 
 
 
-
+#runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
 for x in range(1, 6):
     directory = "Test" + str(x)
 
