@@ -253,11 +253,21 @@ class RatingEvaluator:
         if not logfile.closed:
             logfile.close()
 
-evaluationAlgoritms = [
-    (EvaluationAlgorithm.prefabs["RMSE"], None),
-    (EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 50)),
-    (EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+predictionAlgorithms = [
+    "Weighted Content Based",
+    "v2.0NearestNeighbour",
+    "Matrix Factorization V.2"
 ]
-evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour", "Baseline", "Matrix Factorization", "Matrix Factorization V.2", "v2.0NearestNeighbour"], range(1, 6), evaluationAlgoritms)
-evaluator.evaluate_all_algorithms()
+
+splits = range(0,1000)
+
+evaluationAlgorithms = []
+
+for split in splits:
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (0,  split)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (split + 1,  1000)))
+
+def print_splits(predictionAlgorithms, splits):
+    evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
+    evaluator.evaluate_all_algorithms()
 evaluator.log_results(input("Evaluation Description:\n"))
