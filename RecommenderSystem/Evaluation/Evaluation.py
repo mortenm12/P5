@@ -254,11 +254,11 @@ class RatingEvaluator:
             logfile.close()
 
 evaluationAlgoritms = [
-    (EvaluationAlgorithm.prefabs["URSMAE"], (0,5)),
-    (EvaluationAlgorithm.prefabs["MRSMAE"], (0,5)),
-    (EvaluationAlgorithm.prefabs["URSRMSE"], (0,5)),
-    (EvaluationAlgorithm.prefabs["MRSRMSE"], (0,5))
+    (EvaluationAlgorithm.prefabs["URSMAE"], (50,500)),
+    (EvaluationAlgorithm.prefabs["MRSMAE"], (50,500)),
+    (EvaluationAlgorithm.prefabs["URSRMSE"], (50,500)),
+    (EvaluationAlgorithm.prefabs["MRSRMSE"], (50,500))
 ]
-evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour", "Baseline", "Matrix Factorization", "Matrix Factorization V.2"], range(1, 6), evaluationAlgoritms)
+evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour", "Baseline", "Matrix Factorization", "Matrix Factorization V.2", "v2.0NearestNeighbour"], range(1, 6), evaluationAlgoritms)
 evaluator.evaluate_all_algorithms()
 evaluator.log_results(input("Evaluation Description:\n"))
