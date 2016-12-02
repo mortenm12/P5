@@ -2,11 +2,13 @@ from DataAPI import read_ratings
 
 all_ratings = read_ratings("FullData")
 
-
 class NoValidEntriesError(Exception):
     pass
 
-
+#Generates a confusion_matrix_generator from a predicate
+#The predicate decides whether an element is relevant or not
+#This allows us to evaluate several recommendation lists while
+#   only reading through the full set of ratings once.
 def confusion_matrix_generator_from_predicate(predicate):
     true_count = 0
     false_count = 0
@@ -50,7 +52,9 @@ def calculate_precision(confusion_matrix):
 def calculate_recall(confusion_matrix):
     return float(confusion_matrix["TruePositive"]) / (confusion_matrix["TruePositive"] + confusion_matrix["FalseNegative"])
 
-
+#Finds the average precision and recall of a complete set of recommendation lists.
+#That implies one list for each user, indexed by userid.
+#Due to the large sparsity of the ratings, only recommendation lists with at least one known rating is considered.
 def average_precision_recall(recommendation_lists, predicate):
     precision = 0.0
     recall = 0.0

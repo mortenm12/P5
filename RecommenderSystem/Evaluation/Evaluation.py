@@ -253,11 +253,30 @@ class RatingEvaluator:
         if not logfile.closed:
             logfile.close()
 
-evaluationAlgoritms = [
-    (EvaluationAlgorithm.prefabs["RMSE"], None),
-    (EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 50)),
-    (EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+predictionAlgorithms = [
+    "Weighted Content Based",
+    "v2.0NearestNeighbour",
+    "Matrix Factorization V.2"
 ]
-evaluator = RatingEvaluator(["Weighted Content Based", "v2.1NearestNeighbour", "Baseline", "Matrix Factorization", "Matrix Factorization V.2", "v2.0NearestNeighbour"], range(1, 6), evaluationAlgoritms)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results(input("Evaluation Description:\n"))
+
+splits = range(0,1000)
+
+evaluationAlgorithms = []
+
+for split in splits:
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (0,  split)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (split + 1,  1000)))
+
+def print_splits(predictionAlgorithms, splits):
+    evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
+    evaluator.evaluate_all_algorithms()
+    for split in splits:
+        sums = {}
+        for tailAlgo in predictionAlgorithms:
+            for headAlgo in predictionAlgorithms:
+                sums[(tailAlgo, headAlgo)] = 0
+                for i in range(1,6):
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("MRSRMSE", (0, split))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("MRSRMSE", (split + 1,  1000))]
+        lowest = min(sums, key = lambda item: sums[item])
+        print("Split:" + str(split) + " BestTailHead:" + str(lowest) + " AverageError:" + str(sums[lowest] / 10))
