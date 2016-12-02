@@ -14,7 +14,7 @@ def cos(a, b):
     else:
         raise Exception("a and b must be of the same length")
 
-    if len(a) != 0:
+    if len(a) > 1:
         return sum / (length(a) * length(b))
     else:
         return 0

@@ -14,7 +14,7 @@ def cos(a, b):
     else:
         raise Exception("a and b must be of the same length")
 
-    if len(a) != 0 and len(b) != 0:
+    if len(a) > 1:
         return sum / (length(a) * length(b))
     else:
         return 0
@@ -59,7 +59,7 @@ def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_a
     sum2 = 0
     if len(weight_rating_tuples) == 0:
 
-        return all_average + (user_average_array[user - 1] - all_average) + (movie_average_array[movie - 1] - all_average)
+        return 1.00
 
     for x in weight_rating_tuples:
         sum1 += x[0] * x[1]
