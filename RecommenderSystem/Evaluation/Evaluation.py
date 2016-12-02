@@ -270,4 +270,13 @@ for split in splits:
 def print_splits(predictionAlgorithms, splits):
     evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
     evaluator.evaluate_all_algorithms()
-evaluator.log_results(input("Evaluation Description:\n"))
+    for split in splits:
+        sums = {}
+        for tailAlgo in predictionAlgorithms:
+            for headAlgo in predictionAlgorithms:
+                sums[(tailAlgo, headAlgo)] = 0
+                for i in range(1,6):
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("MRSRMSE", (0, split))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("MRSRMSE", (split + 1,  1000))]
+        lowest = min(sums, key = lambda item: sums[item])
+        print("Split:" + str(split) + " BestTailHead:" + str(lowest) + " AverageError:" + str(sums[lowest] / 10))
