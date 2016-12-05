@@ -21,10 +21,12 @@ class UserProfile:
                     genre_totals[genre] += ratings[self.user.id - 1][j]
                     genre_sums[genre] += 1
 
-        genre_averages = [genre_totals[i]/genre_sums[i] if genre_sums[i] > 0 else 0 for i in range(19)]
+        genre_averages = [genre_totals[i]/genre_sums[i] if genre_sums[i] > 0 else None for i in range(19)]
 
         for i in range(len(genre_averages)):
-            if genre_averages[i] > 3:
+            if genre_averages[i] is None:
+                pass
+            elif genre_averages[i] > 3:
                 self.relevant_vector[i] = 1
             elif genre_averages[i] <= 3:
                 self.irrelevant_vector[i] = 1
@@ -116,12 +118,23 @@ def calculate_recommendation_matrix(test_set):
 
     write_matrix(result, "ratings.data", test_set)
 
-calculate_recommendation_matrix("Test1")
-calculate_recommendation_matrix("Test2")
-calculate_recommendation_matrix("Test3")
-calculate_recommendation_matrix("Test4")
-calculate_recommendation_matrix("Test5")
+#calculate_recommendation_matrix("Test1")
+#calculate_recommendation_matrix("Test2")
+#calculate_recommendation_matrix("Test3")
+#calculate_recommendation_matrix("Test4")
+#calculate_recommendation_matrix("Test5")
 
-evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], 5)
+evaluationAlgorithms = [
+        (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
+        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+    ]
+
+evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
 evaluator.evaluate_all_algorithms()
 evaluator.log_results("Weighted Content Based Test")
