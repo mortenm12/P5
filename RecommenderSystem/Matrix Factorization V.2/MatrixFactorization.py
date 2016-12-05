@@ -22,7 +22,7 @@ import copy
 #   alpha, the approximation variable, defining how fast the algorithm converges.
 #   beta, the normalization variable, defining how much to avoid overfitting.
 
-def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
+def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02, printing=True):
     # Transposes the Q matrix, so the dot product of P and Q can be taken.
     Q = Q.T
 
@@ -33,8 +33,9 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
     for step in range(0, steps):
 
         # Printing progress.
-        print("{:4d}".format(step), end=' ')
-        print(time.strftime("%H:%M:%S", time.localtime()), end='')
+        if printing:
+            print("{:4d}".format(step), end=' ')
+            print(time.strftime("%H:%M:%S", time.localtime()), end='')
 
         # Iterates over the R matrix, only doing something if a rating has been given.
         for i in range(len(R)):
@@ -64,7 +65,8 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
                     for k in range(0, K):
                         error += (beta / 2) * (pow(P[i][k], 2) + pow(Q[k][j], 2))
         average_error = error / entries
-        print(" Error = " + "{:.2f}".format(float(error)) + " Average Error = " + "{:.2f}".format(float(average_error)))
+        if printing:
+            print(" Error = " + "{:.2f}".format(float(error)) + " Average Error = " + "{:.2f}".format(float(average_error)))
 
         # If the change in error is arbitrarily small, stop execution to avoid useless running time.
         if prev_error != 0 and prev_error - error < 0.1:
@@ -72,7 +74,8 @@ def matrix_factorization(P, Q, R, K, steps=5000, alpha=0.07, beta=0.02):
 
         prev_error = error
 
-    print("Elapsed time: " + time.strftime("%H:%M:%S", time.localtime(time.time() - time_start)))
+    if printing:
+        print("Elapsed time: " + time.strftime("%H:%M:%S", time.localtime(time.time() - time_start)))
 
     return P, Q.T
 
@@ -228,23 +231,23 @@ def calculate_k_recommendations(user, k, test_set):
     return sorted(recommendations, key=lambda x: x[1], reverse=True)[:k]
 
 # Dialogue to determine what test sets will be run.
-print("Do you want to run for all test sets? (Y/N)")
-s = input()
-if s == 'Y':
-    tests_to_run = [1, 2, 3, 4, 5]
-elif s == 'N':
-    print("What test set will you run it for?")
-    s = input
-    tests_to_run = [int(s)]
-else:
-    tests_to_run = [1]
-
+#print("Do you want to run for all test sets? (Y/N)")
+#s = input()
+#if s == 'Y':
+#    tests_to_run = [1, 2, 3, 4, 5]
+#elif s == 'N':
+#    print("What test set will you run it for?")
+#    s = input
+#    tests_to_run = [int(s)]
+#else:
+#    tests_to_run = [1]
+#
 # Run the algorithms on all test sets.
-for i in tests_to_run:
-    do_biased_matrix_factorization("Test" + str(i), K=20, steps=1000, alpha=0.03, beta=0.02)
+#for i in tests_to_run:
+#    do_biased_matrix_factorization("Test" + str(i), K=20, steps=1000, alpha=0.03, beta=0.02)
 
 # Automatically run evaluation on the output of the algorithm.
-evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], tests_to_run)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Evaluation Description: ")
+#evaluator = Evaluation.RatingEvaluator(["Matrix Factorization V.2"], tests_to_run)
+#evaluator.evaluate_all_algorithms()
+#evaluator.log_results("Evaluation Description: ")
 

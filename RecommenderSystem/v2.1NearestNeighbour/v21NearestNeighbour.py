@@ -3,8 +3,7 @@ import math
 import time
 
 
-
-#the cosine function takes a, and b which is a vector, and returns the angle between a and b, between -1 and 1
+# the cosine function takes a, and b which is a vector, and returns the angle between a and b, between -1 and 1
 def cos(a, b):
     sum = 0
 
@@ -20,7 +19,7 @@ def cos(a, b):
         return 0
 
 
-#lenght calculate the lenght of a vector
+# length calculate the length of a vector
 def length(vector):
     sum = 0
 
@@ -30,8 +29,8 @@ def length(vector):
     return math.sqrt(sum)
 
 
-#The weight function returns the weight between user1 and user2
-def weight(user1, user2, ratings, movies, user_average_array):
+# The weight function returns the weight between user1 and user2
+def weight(user1, user2, ratings, movies, user_average_array, all_average):
     movie_ratings = [[],[]]
 
     for movie in movies:
@@ -41,7 +40,8 @@ def weight(user1, user2, ratings, movies, user_average_array):
 
     return cos(movie_ratings[0], movie_ratings[1])
 
-#finds the k nearest neighbour, by the weight
+
+# finds the k nearest neighbour, by the weight
 def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_average_array):
     weight_rating_tuples = []
     for user2 in users:
@@ -51,7 +51,8 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_ave
     sorted_array = sorted(weight_rating_tuples, key=lambda x: x[0])
     return sorted_array[-k:]
 
-#Returns a rating for a user and a movie
+
+# Returns a rating for a user and a movie
 def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average):
     k = 40
     weight_rating_tuples = k_nearest_neighbour(movie, user, k, ratings, users, weight_matrix, user_average_array)
@@ -67,9 +68,10 @@ def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_a
     if sum2 != 0:
         return (sum1/sum2) + user_average_array[user - 1]
     else:
-        return sum1 + user_average_array[user - 1]
+        return sum1
 
-#format an int in seconds, to a string formatted as time
+
+# format an int in seconds, to a string formatted as time
 def format_time(t):
     if t < 1:
         return "00:00:00"
@@ -81,8 +83,9 @@ def format_time(t):
         s = h_rest % 60
         return "{:02d}".format(int(h)) + ":" + "{:02d}".format(int(m)) + ":" + "{:02d}".format(int(s))
 
-#Calculating the weight matrix
-def calculate_weight_matrix(movies, ratings, users, x, average_array):
+
+# Calculating the weight matrix
+def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average, printing=True):
     t_start = time.time()
     weight_matrix = []
     for i in range(len(movies)):
@@ -94,15 +97,17 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array):
         t_current = time.time()
         t_elapsed = t_current - t_start
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
-        print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
-              format_time(t_remaining))
+        if printing:
+            print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+                  format_time(t_remaining))
         for user2 in users:
             if user1 != user2:
-                weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies, average_array)
+                weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies, average_array, all_average)
 
     return weight_matrix
 
-"return an array with all the users average ratings"
+
+# return an array with all the users average ratings
 def calculate_user_average_rating(movies, ratings, users, all_average):
     user_average_array = []
 
@@ -119,10 +124,10 @@ def calculate_user_average_rating(movies, ratings, users, all_average):
         else:
             user_average_array.insert(user, all_average)
 
-
     return user_average_array
 
-#returns an array of all the movie average ratings
+
+# returns an array of all the movie average ratings
 def calculate_movie_average_rating(movies, ratings, users, all_average):
     average_array = []
 
@@ -140,8 +145,9 @@ def calculate_movie_average_rating(movies, ratings, users, all_average):
 
     return average_array
 
-#returens the average of all the ratings
-def calculate_all_average(users, movies, ratings):
+
+# returns the average of all the ratings
+def calculate_all_average(users, movies, ratings, printing=True):
     i = 0
     sum1 = 0
     for user in users:
@@ -149,26 +155,26 @@ def calculate_all_average(users, movies, ratings):
             if ratings[user - 1][movie - 1] > 0:
                 i += 1
                 sum1 += ratings[user - 1][movie - 1]
-    print(sum1/i)
+    if printing:
+        print(sum1/i)
     return sum1 / i
 
 
-
-
-#runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
-for x in range(1, 6):
-    directory = "Test" + str(x)
-
+def calculate_recommendation_matrix(directory, printing=True):
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(directory)
+    rated = do_nearest_neighbour(users, movies, ratings, directory, printing)
+    write_results(movies, users, rated, directory, printing)
 
+
+def do_nearest_neighbour(users, movies, ratings, directory="Test1", printing=True, bounding=True):
     i = 0
     rated = ratings
-    all_average = calculate_all_average(users, movies, ratings)
+    all_average = calculate_all_average(users, movies, ratings, printing)
     user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
     movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[-1:]), user_average_array, all_average, printing)
     starting_time = time.time()
     for user in users:
         i += 1
@@ -177,20 +183,28 @@ for x in range(1, 6):
         elapsed_time = current_time - starting_time
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-        print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+        if printing:
+            print(directory[-1:], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+                  " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
+                rated[user - 1][movie - 1] = (
+                rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
 
-    for user in users:
-        for movie in movies:
-            if rated[user - 1][movie - 1] > 5:
-                rated[user - 1][movie - 1] = 5
-            elif rated[user - 1][movie - 1] < 1:
-                rated[user - 1][movie - 1] = 1
+    if bounding:
+        for user in users:
+            for movie in movies:
+                if rated[user - 1][movie - 1] > 5:
+                    rated[user - 1][movie - 1] = 5
+                elif rated[user - 1][movie - 1] < 1:
+                    rated[user - 1][movie - 1] = 1
 
-    output = open("Output/Test" + str(x) + "/ratings.data", "w")
+    return rated
+
+
+def write_results(users, movies, rated, directory, printing=True):
+    output = open("Output/" + directory + "/ratings.data", "w")
     output.write("   ID, ")
     for movie in movies:
         output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
@@ -200,7 +214,8 @@ for x in range(1, 6):
 
     for user in users:
         i += 1
-        print("Writing", round((i / len(users)) * 100, 1), "%")
+        if printing:
+            print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
         for movie in movies:
             output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
@@ -209,3 +224,8 @@ for x in range(1, 6):
 
     if not output.closed:
         output.close()
+
+# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
+#for x in range(1, 6):
+#    calculate_recommendation_matrix("Test" + str(x))
+

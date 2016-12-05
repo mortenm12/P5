@@ -76,7 +76,7 @@ def format_time(t):
         return "{:02d}".format(int(h)) + ":" + "{:02d}".format(int(m)) + ":" + "{:02d}".format(int(s))
 
 
-def calculate_weight_matrix(movies, ratings, users, x):
+def calculate_weight_matrix(movies, ratings, users, x, printing=True):
     t_start = time.time()
     weight_matrix = []
 
@@ -89,8 +89,9 @@ def calculate_weight_matrix(movies, ratings, users, x):
         t_current = time.time()
         t_elapsed = t_current - t_start
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
-        print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
-              format_time(t_remaining))
+        if printing:
+            print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+                  format_time(t_remaining))
 
         for user2 in users:
             if user1 != user2:
@@ -98,15 +99,19 @@ def calculate_weight_matrix(movies, ratings, users, x):
 
     return weight_matrix
 
-for x in range(1, 6):
-    directory = "Test" + str(x)
+
+def calculate_recommendation_matrix(directory, printing=True):
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(directory)
+    rated = do_nearest_neighbour(users, movies, ratings, directory, printing)
+    write_results(movies, users, rated, directory, printing)
 
+
+def do_nearest_neighbour(users, movies, ratings, directory="Test1", printing=True, bounding=True):
     i = 0
     rated = ratings
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, x)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[-1:]), printing)
     starting_time = time.time()
 
     for user in users:
@@ -116,20 +121,27 @@ for x in range(1, 6):
         elapsed_time = current_time - starting_time
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-        print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+        if printing:
+            print(directory[-1:], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+                  " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
                 rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix))
 
-    for user in users:
-        for movie in movies:
-            if rated[user - 1][movie - 1] > 5:
-                rated[user - 1][movie - 1] = 5
-            elif rated[user - 1][movie - 1] < 1:
-                rated[user - 1][movie - 1] = 1
+    if bounding:
+        for user in users:
+            for movie in movies:
+                if rated[user - 1][movie - 1] > 5:
+                    rated[user - 1][movie - 1] = 5
+                elif rated[user - 1][movie - 1] < 1:
+                    rated[user - 1][movie - 1] = 1
 
-    output = open("Output/Test" + str(x) + "/ratings.data", "w")
+    return rated
+
+
+def write_results(users, movies, rated, directory, printing=True):
+    output = open("Output/" + directory + "/ratings.data", "w")
     output.write("   ID, ")
 
     for movie in movies:
@@ -140,7 +152,8 @@ for x in range(1, 6):
 
     for user in users:
         i += 1
-        print("Writing", round((i / len(users)) * 100, 1), "%")
+        if printing:
+            print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
 
         for movie in movies:
@@ -150,3 +163,6 @@ for x in range(1, 6):
 
     if not output.closed:
         output.close()
+
+#for x in range(1, 6):
+#    calculate_recommendation_matrix("Test" + str(x))

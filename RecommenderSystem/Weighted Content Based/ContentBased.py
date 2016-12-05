@@ -89,13 +89,7 @@ def write_matrix(m, file, test_set):
         result.close()
 
 
-# Calculate all recommended ratings and enter them into a matrix.
-def calculate_recommendation_matrix(test_set):
-    # Initialize variables.
-    R = read_ratings(test_set)
-    M = read_movies_as_object_list()
-    U = read_users_as_object_list()
-    U = add_rating_metrics_to_users(M, U, R)
+def do_content_based(R, M, U, printing=True):
     result = [[0 for j in range(len(R[0]))] for i in range(len(R))]
 
     # Generate movie and user profiles.
@@ -103,18 +97,29 @@ def calculate_recommendation_matrix(test_set):
     user_profiles = [UserProfile(user) for user in U]
 
     for profile in user_profiles:
-        print("Generating preferences for user: " + str(profile.user.id))
+        if(printing):
+            print("Generating preferences for user: " + str(profile.user.id))
         profile.calculate_relevancy_vectors(R, M)
 
     # Calculate each rating for each user/item pair.
     for i in range(len(R)):
-        print("Calculating ratings for user: " + str(i + 1))
+        if(printing):
+            print("Calculating ratings for user: " + str(i + 1))
 
         for j in range(len(R[0])):
-            # if R[i][j] > 0:
-                # result[i][j] = R[i][j]
-            # else:
             result[i][j] = calculate_rating(user_profiles[i], movie_profiles[j])
+
+    return result
+
+
+# Calculate all recommended ratings and enter them into a matrix.
+def calculate_recommendation_matrix(test_set):
+    # Initialize variables.
+    R = read_ratings(test_set)
+    M = read_movies_as_object_list()
+    U = read_users_as_object_list()
+    U = add_rating_metrics_to_users(M, U, R)
+    result = do_content_based(R, M, U)
 
     write_matrix(result, "ratings.data", test_set)
 
@@ -124,17 +129,17 @@ def calculate_recommendation_matrix(test_set):
 #calculate_recommendation_matrix("Test4")
 #calculate_recommendation_matrix("Test5")
 
-evaluationAlgorithms = [
-        (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
-        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
-    ]
+#evaluationAlgorithms = [
+ #       (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
+ #       (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+ #   ]
 
-evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Weighted Content Based Test")
+#evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
+#evaluator.evaluate_all_algorithms()
+#evaluator.log_results("Weighted Content Based Test")
