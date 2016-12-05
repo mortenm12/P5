@@ -1,7 +1,6 @@
 import DataAPI
 
 
-#test
 def get_head_and_tail(k):
 
     for x in range(1,6):
@@ -28,3 +27,20 @@ def get_head_and_tail(k):
                 tail_movies.append(j)
 
     return head_movies, tail_movies
+
+
+def merge(head_movies, tail_movies, head_ratings, tail_ratings):
+    users = len(head_ratings)
+    ratings = []
+
+    for i in range(0, users):
+        ratings[i].append([])
+
+    for i in range(0, users):
+        for j in head_movies:
+            ratings[i][j] = head_ratings[i][j]
+
+        for j in tail_movies:
+            ratings[i][j] = tail_ratings[i][j]
+
+    return ratings
