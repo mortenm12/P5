@@ -75,7 +75,7 @@ def calculate_rating(user_profile, movie_profile):
 
 # Write a matrix to a file.
 def write_matrix(m, file, test_set):
-    result = open("Output/" + test_set + "/" + file, "w")
+    result = open("../Weighted Content Based/Output/" + test_set + "/" + file, "w")
     result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
 
     for i in range(0, len(m)):
@@ -116,12 +116,12 @@ def calculate_recommendation_matrix(test_set):
 
     write_matrix(result, "ratings.data", test_set)
 
-calculate_recommendation_matrix("Test1")
-calculate_recommendation_matrix("Test2")
-calculate_recommendation_matrix("Test3")
-calculate_recommendation_matrix("Test4")
-calculate_recommendation_matrix("Test5")
+#calculate_recommendation_matrix("Test1")
+#calculate_recommendation_matrix("Test2")
+#calculate_recommendation_matrix("Test3")
+#calculate_recommendation_matrix("Test4")
+#calculate_recommendation_matrix("Test5")
 
-evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], 5)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Weighted Content Based Test")
+#evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], 5)
+#evaluator.evaluate_all_algorithms()
+#evaluator.log_results("Weighted Content Based Test")

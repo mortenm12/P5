@@ -29,14 +29,16 @@ def get_head_and_tail(k):
     return head_movies, tail_movies
 
 
-def merge(head_movies, tail_movies, head_ratings, tail_ratings):
-    users = len(head_ratings)
+def merge(head_movies, tail_movies, head_ratings, tail_ratings, users):
+
     ratings = []
 
-    for i in range(0, users):
-        ratings[i].append([])
+    for i in range(0, len(users)):
+        ratings.append([])
+        for j in range(0, len(head_movies) + len(tail_movies)):
+            ratings[i].append(0.0)
 
-    for i in range(0, users):
+    for i in range(0, len(users)):
         for j in head_movies:
             ratings[i][j] = head_ratings[i][j]
 
