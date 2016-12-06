@@ -28,7 +28,7 @@ def ConfusionMatrixGeneratorFromPredicate(predicate):
                 relevantCount += 1
             elif isRelevant == False:
                 irrelevantCount += 1
-                relevanceMatrix[user].append(isRelevant)
+            relevanceMatrix[user].append(isRelevant)
 
     # ConfusionMatrixGenerator(recommendations, user):
     # Makes a confusion-matrix.
