@@ -26,10 +26,8 @@ recommendation = []
 
 for user in range(0, len(users)):
     recommendation.insert(user, recommend(user, old_ratings, movies, new_ratings, users, 10))
-    print(recommendation[user-1])
-    for x in recommendation[user-1]:
-        if x >= len(movies):
-            print("HERE!!!!!\n\n\n\n\n")
+    print(user, ":", recommendation[user-1])
+
 
 
 

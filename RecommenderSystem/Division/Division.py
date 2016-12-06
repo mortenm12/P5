@@ -43,7 +43,7 @@ def recommend(usernr, old_ratings, movies, new_ratings, users, k):
     for movie in tail_movies:
         tail_tuple.append([new_ratings[usernr][movie], movie])
 
-    tail_tuple.sort(key=lambda x: x[0], reverse=True)
+    tail_tuple.sort(key=lambda x: x[0], reverse=False)
 
     return_array = []
 
