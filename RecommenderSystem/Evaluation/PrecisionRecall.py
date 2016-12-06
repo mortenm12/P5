@@ -14,21 +14,21 @@ class NoValidEntriesError(Exception):
 # return - A confusion-matrix generator. (Defined inside function)
 #
 def ConfusionMatrixGeneratorFromPredicate(predicate):
-    trueCount = 0
-    falseCount = 0
-    correctnessMatrix = []
+    relevantCount = 0
+    irrelevantCount = 0
+    relevanceMatrix = []
 
     #Count how many ratings does/doesn't satisfy the predicate.
     #Also record the results in correctnessMatrix in case of a slow predicate.
     for user, userRatings in enumerate(AllRatings):
-        correctnessMatrix.append([])
+        relevanceMatrix.append([])
         for movie, rating in enumerate(userRatings):
-            isCorrect = predicate(rating, user, movie)
-            if isCorrect == True:
-                trueCount += 1
-            elif isCorrect == False:
-                falseCount += 1
-            correctnessMatrix[user].append(isCorrect)
+            isRelevant = predicate(rating, user, movie)
+            if isRelevant == True:
+                relevantCount += 1
+            elif isRelevant == False:
+                irrelevantCount += 1
+                relevanceMatrix[user].append(isRelevant)
 
     # ConfusionMatrixGenerator(recommendations, user):
     # Makes a confusion-matrix.
@@ -44,14 +44,14 @@ def ConfusionMatrixGeneratorFromPredicate(predicate):
 
         # Count how many recommendations does/doesn't satisfy the predicate.
         for movie in recommendations:
-            if correctnessMatrix[user][movie] == True:
+            if relevanceMatrix[user][movie] == True:
                 confusionMatrix["TruePositive"] += 1
-            elif correctnessMatrix[user][movie] == False:
+            elif relevanceMatrix[user][movie] == False:
                 confusionMatrix["FalsePositive"] += 1
 
         # Subtract count of recommended from total count to find count of unrecommended.
-        confusionMatrix["TrueNegative"] = trueCount - confusionMatrix["TruePositive"]
-        confusionMatrix["FalseNegative"] = falseCount -  confusionMatrix["FalsePositive"]
+        confusionMatrix["FalseNegative"] = relevantCount - confusionMatrix["TruePositive"]
+        confusionMatrix["TrueNegative"] = irrelevantCount -  confusionMatrix["FalsePositive"]
 
         return confusionMatrix
 
