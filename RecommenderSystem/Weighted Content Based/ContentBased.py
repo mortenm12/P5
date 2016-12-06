@@ -21,10 +21,12 @@ class UserProfile:
                     genre_totals[genre] += ratings[self.user.id - 1][j]
                     genre_sums[genre] += 1
 
-        genre_averages = [genre_totals[i]/genre_sums[i] if genre_sums[i] > 0 else 0 for i in range(19)]
+        genre_averages = [genre_totals[i]/genre_sums[i] if genre_sums[i] > 0 else None for i in range(19)]
 
         for i in range(len(genre_averages)):
-            if genre_averages[i] > 3:
+            if genre_averages[i] is None:
+                pass
+            elif genre_averages[i] > 3:
                 self.relevant_vector[i] = 1
             elif genre_averages[i] <= 3:
                 self.irrelevant_vector[i] = 1
@@ -75,7 +77,7 @@ def calculate_rating(user_profile, movie_profile):
 
 # Write a matrix to a file.
 def write_matrix(m, file, test_set):
-    result = open("../Weighted Content Based/Output/" + test_set + "/" + file, "w")
+    result = open("Output/" + test_set + "/" + file, "w")
     result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
 
     for i in range(0, len(m)):
@@ -122,6 +124,17 @@ def calculate_recommendation_matrix(test_set):
 #calculate_recommendation_matrix("Test4")
 #calculate_recommendation_matrix("Test5")
 
-#evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], 5)
-#evaluator.evaluate_all_algorithms()
-#evaluator.log_results("Weighted Content Based Test")
+evaluationAlgorithms = [
+        (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
+        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
+        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+    ]
+
+evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
+evaluator.evaluate_all_algorithms()
+evaluator.log_results("Weighted Content Based Test")
