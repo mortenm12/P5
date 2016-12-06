@@ -3,7 +3,7 @@ from v2NearestNeighbour import KNN
 import DataAPI
 from ContentBased import calculate_recommendation_matrix
 from Division import recommend
-from PrecisionRecall import average_precision_recall
+from PrecisionRecall import AveragePrecisionRecall
 test = 1
 test_set = "Test" + str(test)
 
@@ -24,11 +24,14 @@ new_ratings = merge(head_movies, tail_movies, head_ratings, tail_ratings, users)
 
 recommendation = []
 
-for user in range(1, len(users)):
-    recommendation.append(recommend(user, old_ratings, movies, new_ratings, users, 10))
+for user in range(0, len(users)):
+    recommendation.insert(user, recommend(user, old_ratings, movies, new_ratings, users, 10))
     print(recommendation[user-1])
+    for x in recommendation[user-1]:
+        if x >= len(movies):
+            print("HERE!!!!!\n\n\n\n\n")
 
-print(recommendation)
+
 
 def isRelevant(rating, user, movie):
     if rating == 0:
@@ -38,5 +41,5 @@ def isRelevant(rating, user, movie):
     else:
         return False
 
-print (average_precision_recall(recommendation, isRelevant))
+print (AveragePrecisionRecall(recommendation, isRelevant))
 #kør precision recall på recomendationen
