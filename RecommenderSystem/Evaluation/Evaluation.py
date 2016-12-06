@@ -259,13 +259,13 @@ predictionAlgorithms = [
     "Matrix Factorization V.2"
 ]
 
-splits = range(0,1000)
+splits = [1, 2, 4, 8, 16, 32, 41, 42, 43, 64, 128]
 
 evaluationAlgorithms = []
 
 for split in splits:
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (0,  split)))
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (split + 1,  1000)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (0,  split - 1)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (split,  1000)))
 
 def print_splits(predictionAlgorithms, splits):
     evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
@@ -276,7 +276,7 @@ def print_splits(predictionAlgorithms, splits):
             for headAlgo in predictionAlgorithms:
                 sums[(tailAlgo, headAlgo)] = 0
                 for i in range(1,6):
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("MRSRMSE", (0, split))]
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("MRSRMSE", (split + 1,  1000))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("MRSRMSE", (0, split - 1))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("MRSRMSE", (split,  1000))]
         lowest = min(sums, key = lambda item: sums[item])
         print("Split:" + str(split) + " BestTailHead:" + str(lowest) + " AverageError:" + str(sums[lowest] / 10))
