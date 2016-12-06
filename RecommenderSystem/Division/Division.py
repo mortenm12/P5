@@ -35,15 +35,15 @@ def recommend(usernr, old_ratings, movies, new_ratings, users, k):
 
     head_tuple = []
     for movie in head_movies:
-        head_tuple.append([new_ratings[usernr][movie], movie + 1])
+        head_tuple.append([new_ratings[usernr][movie], movie + 0])
 
-    head_tuple.sort(key=lambda x: x[0], reverse=True)
+    head_tuple.sort(key=lambda x: x[0], reverse=False)
 
     tail_tuple = []
     for movie in tail_movies:
-        tail_tuple.append([new_ratings[usernr][movie], movie + 1])
+        tail_tuple.append([new_ratings[usernr][movie], movie + 0])
 
-    tail_tuple.sort(key=lambda x: x[0], reverse=True)
+    tail_tuple.sort(key=lambda x: x[0], reverse=False)
 
     return_array = []
     return_array.append(usernr)
