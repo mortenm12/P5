@@ -6,13 +6,13 @@ from PrecisionRecall import AveragePrecisionRecall
 
 def log(evaluation_result):
     file = open("EvaluationLog.txt", "a")
-    file.write(evaluation_result)
+    file.write(str(evaluation_result), "\n")
 
     if not file.closed:
         file.close()
 
 
-def is_relevant(rating):
+def is_relevant(rating, User, Movie):
     if rating == 0:
         return None
     elif rating >= 4:
@@ -80,7 +80,7 @@ def recommend(usernr, old_ratings, movies, new_ratings, users, k, test_set):
     for movie in tail_movies:
         tail_tuple.append([new_ratings[usernr][movie], movie])
 
-    tail_tuple.sort(key=lambda x: x[0], reverse=False)
+    tail_tuple.sort(key=lambda x: x[0], reverse=True)
 
     return_array = []
 

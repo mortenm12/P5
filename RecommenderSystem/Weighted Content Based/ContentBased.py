@@ -77,7 +77,7 @@ def calculate_rating(user_profile, movie_profile):
 
 # Write a matrix to a file.
 def write_matrix(m, file, test_set):
-    result = open("Output/" + test_set + "/" + file, "w")
+    result = open("../Weighted Content Based/Output/" + test_set + "/" + file, "w")
     result.write(" ID , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
 
     for i in range(0, len(m)):
