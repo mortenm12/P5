@@ -124,17 +124,17 @@ def calculate_recommendation_matrix(test_set):
 #calculate_recommendation_matrix("Test4")
 #calculate_recommendation_matrix("Test5")
 
-evaluationAlgorithms = [
-        (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
-        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
-        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
-    ]
+#evaluationAlgorithms = [
+#        (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["MURWAE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["MMRWAE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["RMURWSE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["RMMRWSE"], None),
+#        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
+#        (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 1000))
+#    ]
 
-evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Weighted Content Based Test")
+#evaluator = Evaluation.RatingEvaluator(["Weighted Content Based"], [1, 2, 3, 4, 5], evaluationAlgorithms)
+#evaluator.evaluate_all_algorithms()
+#evaluator.log_results("Weighted Content Based Test")
