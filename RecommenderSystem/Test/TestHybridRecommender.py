@@ -49,3 +49,27 @@ class Test(unittest.TestCase, Input):
 
         self.assertListEqual(expected, output)
         print("Merge works!")
+
+    def test_division(self):
+        user = 1
+        expected_h, expected_t = 0.25, 0.75
+
+        h, t = HR.division(user, self.Head, self.Tail, self.M_id, self.R)
+
+        self.assertEqual(expected_h, h)
+        self.assertEqual(expected_t, t)
+        print("Division works!")
+
+    def test_recommend(self):
+        user = 1
+        new_R = [[5, 2, 2, 4, 4],
+                 [1, 3, 3, 5, 5],
+                 [2, 4, 4, 1, 1],
+                 [3, 5, 5, 2, 2],
+                 [4, 1, 1, 3, 3]]
+        expected = [3]
+
+        output = HR.recommend(user, self.R, self.M_id, new_R, self.U_id, 4, self.Head, self.Tail)
+
+        self.assertListEqual(expected, output)
+        print("Recommend works!")

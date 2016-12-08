@@ -57,35 +57,46 @@ def merge(head_movies, tail_movies, head_ratings, tail_ratings, users):
     return ratings
 
 
-def recommend(usernr, old_ratings, movies, new_ratings, users, k):
-    head_movies, tail_movies = get_head_and_tail(80, users, movies, old_ratings)
+def recommend(usernr, old_ratings, movies, new_ratings, users, k, head_movies, tail_movies):
     head_percent, tail_percent = division(usernr, head_movies, tail_movies, movies, old_ratings)
-
-    for user in range(0, len(users)):
-        for movie in range(0, len(movies)):
-            if old_ratings[user][movie] > 0.0:
-                new_ratings[user][movie] = 0.0
 
     head_tuple = []
     for movie in head_movies:
-        head_tuple.append([new_ratings[usernr][movie], movie])
+        if not old_ratings[usernr][movie] > 0:
+            head_tuple.append([new_ratings[usernr][movie], movie])
 
     head_tuple.sort(key=lambda x: x[0], reverse=True)
 
     tail_tuple = []
     for movie in tail_movies:
-        tail_tuple.append([new_ratings[usernr][movie], movie])
+        if not old_ratings[usernr][movie] > 0:
+            tail_tuple.append([new_ratings[usernr][movie], movie])
 
     tail_tuple.sort(key=lambda x: x[0], reverse=True)
 
     return_array = []
 
-    for i in range(0, int(round(head_percent * k, 0))):
-        return_array.append(head_tuple[i][1])
+    if k > len(tail_tuple) + len(head_tuple):
+        k = len(tail_tuple) + len(head_tuple)
 
-    for i in range(0, int(round(tail_percent * k, 0))):
-        return_array.append(tail_tuple[i][1])
+    limit = int(round(head_percent*k, 0))
 
+    if len(head_tuple) == 0 and len(tail_tuple) == 0:
+        pass
+    elif len(head_tuple) == 0:
+        for i in range(k):
+            return_array.append(tail_tuple[i][1])
+    elif len(tail_tuple) == 0:
+        for i in range(k):
+            return_array.append(head_tuple[i][1])
+    else:
+        for i in range(k):
+            j = 0
+            if i + 1 <= limit:
+                return_array.append(head_tuple[i][1])
+            elif i + 1 > limit:
+                return_array.append(tail_tuple[j][1])
+                j += 1
     return return_array
 
 
@@ -99,10 +110,8 @@ def division(usernr, head_movies, tail_movies, movies, ratings):
             sum1 += 1
             if movie in head_movies:
                 head += 1
-
             elif movie in tail_movies:
                 tail += 1
-
             else:
                 raise ValueError("well, fuck")
 
@@ -134,7 +143,7 @@ def do_hybrid_recommendation(test):
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
-        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 10))
+        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 10, head_movies, tail_movies))
         print(user, ":", recommendations[user - 1])
 
     return recommendations
