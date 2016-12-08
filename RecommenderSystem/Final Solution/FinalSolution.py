@@ -90,8 +90,8 @@ def recommend(usernr, old_ratings, movies, new_ratings, users, k, head_movies, t
         for i in range(k):
             return_array.append(head_tuple[i][1])
     else:
+        j = 0
         for i in range(k):
-            j = 0
             if i + 1 <= limit:
                 return_array.append(head_tuple[i][1])
             elif i + 1 > limit:
@@ -129,11 +129,11 @@ def do_hybrid_recommendation(test):
     ratings = DataAPI.read_ratings(test_set)
 
     # Do K-Nearest Neigbour
-    KNN(test)
+    #KNN(test)
     head_ratings = DataAPI.read_recommendation_matrix("v2.1NearestNeighbour", test_set)
 
     # Do Content Based
-    calculate_recommendation_matrix(test_set)
+    #calculate_recommendation_matrix(test_set)
     tail_ratings = DataAPI.read_recommendation_matrix("Weighted Content Based", test_set)
 
     # Merge results
@@ -143,13 +143,15 @@ def do_hybrid_recommendation(test):
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
+        if user == 800:
+            hej = 0
         recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 10, head_movies, tail_movies))
         print(user, ":", recommendations[user - 1])
 
     return recommendations
 
-#or i in [1, 2, 3, 4, 5]:
-#    recommendations = do_hybrid_recommendation(i)
-#    result = average_precision_recall(recommendations, is_relevant)
-#    print(result)
-#    log(result)
+for i in [1, 2, 3, 4, 5]:
+    recommendations = do_hybrid_recommendation(i)
+    result = average_precision_recall(recommendations, is_relevant)
+    print(result)
+    log(result)
