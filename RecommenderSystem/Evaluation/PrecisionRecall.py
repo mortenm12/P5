@@ -48,9 +48,9 @@ def confusion_matrix_generator_from_predicate(predicate, all_ratings):
 
         # Count how many recommendations does/doesn't satisfy the predicate.
         for movie in recommendations:
-            if relevance_matrix[user][movie]:
+            if relevance_matrix[user][movie] == True:
                 confusion_matrix["TruePositive"] += 1
-            elif not relevance_matrix[user][movie]:
+            elif relevance_matrix[user][movie] == False:
                 confusion_matrix["FalsePositive"] += 1
 
         # Subtract count of recommended from total count to find count of unrecommended.
