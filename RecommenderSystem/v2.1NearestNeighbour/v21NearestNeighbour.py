@@ -53,9 +53,8 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_ave
 
 
 # Returns a rating for a user and a movie
-def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average):
-    k = 40
-    weight_rating_tuples = k_nearest_neighbour(movie, user, k, ratings, users, weight_matrix, user_average_array)
+def rate(movie, user, users, ratings, weight_matrix, user_average_array, K=40):
+    weight_rating_tuples = k_nearest_neighbour(movie, user, K, ratings, users, weight_matrix, user_average_array)
     sum1 = 0
     sum2 = 0
     if len(weight_rating_tuples) == 0:
@@ -159,20 +158,13 @@ def calculate_all_average(users, movies, ratings):
     return sum1 / i
 
 
-# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
-def KNN(x):
-    directory = "Test" + str(x)
-
-    users = DataAPI.read_users_as_id_list()
-    movies = DataAPI.read_movies_as_id_list()
-    ratings = DataAPI.read_ratings(directory)
-
+def do_K_nearest_neighbour(users, movies, ratings, directory, K=40):
     i = 0
     rated = ratings
     all_average = calculate_all_average(users, movies, ratings)
     user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
     movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array, all_average)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[:-1]), user_average_array, all_average)
     starting_time = time.time()
     for user in users:
         i += 1
@@ -181,11 +173,13 @@ def KNN(x):
         elapsed_time = current_time - starting_time
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-        print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
+        print(directory[:-1], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+              " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
+                rated[user - 1][movie - 1] = (
+                rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average, K))
 
     for user in users:
         for movie in movies:
@@ -193,6 +187,19 @@ def KNN(x):
                 rated[user - 1][movie - 1] = 5
             elif rated[user - 1][movie - 1] < 1:
                 rated[user - 1][movie - 1] = 1
+
+    return rated
+
+
+# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
+def KNN(x):
+    directory = "Test" + str(x)
+
+    users = DataAPI.read_users_as_id_list()
+    movies = DataAPI.read_movies_as_id_list()
+    ratings = DataAPI.read_ratings(directory)
+
+    new_ratings = do_K_nearest_neighbour(users, movies, ratings, directory)
 
     output = open("../v2.1NearestNeighbour/Output/Test" + str(x) + "/ratings.data", "w")
     output.write("   ID, ")
@@ -207,12 +214,14 @@ def KNN(x):
         print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
         for movie in movies:
-            output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
+            output.write("{: .2f}".format(new_ratings[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
 
         output.write("\n")
 
     if not output.closed:
         output.close()
+
+    return new_ratings
 
 # runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
 #for x in range(1, 6):

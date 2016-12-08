@@ -32,10 +32,10 @@ class Test(unittest.TestCase):
     M_id = [1, 2, 3, 4, 5]
     U_obj = [DataAPI.User(1), DataAPI.User(2), DataAPI.User(3), DataAPI.User(4), DataAPI.User(5)]
     M_obj = [DataAPI.Movie(1, None, [1, 2, 16]),
-         DataAPI.Movie(2, None, [5, 14]),
-         DataAPI.Movie(3, None, [8]),
-         DataAPI.Movie(4, None, [1, 2, 4, 9, 15]),
-         DataAPI.Movie(5, None, [1, 16])]
+             DataAPI.Movie(2, None, [5, 14]),
+             DataAPI.Movie(3, None, [8]),
+             DataAPI.Movie(4, None, [1, 2, 4, 9, 15]),
+             DataAPI.Movie(5, None, [1, 16])]
     U_obj = DataAPI.add_rating_metrics_to_users(M_obj, U_obj, R)
 
     def test_precision_recall(self):
