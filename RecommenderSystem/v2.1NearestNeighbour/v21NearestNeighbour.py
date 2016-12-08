@@ -84,7 +84,7 @@ def format_time(t):
 
 
 # Calculating the weight matrix
-def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average):
+def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average, printing):
     t_start = time.time()
     weight_matrix = []
     for i in range(len(movies)):
@@ -96,8 +96,9 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array, all_averag
         t_current = time.time()
         t_elapsed = t_current - t_start
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
-        print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
-              format_time(t_remaining))
+        if printing:
+            print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+                  format_time(t_remaining))
         for user2 in users:
             if user1 != user2:
                 weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies, average_array, all_average)
@@ -145,7 +146,7 @@ def calculate_movie_average_rating(movies, ratings, users, all_average):
 
 
 # returns the average of all the ratings
-def calculate_all_average(users, movies, ratings):
+def calculate_all_average(users, movies, ratings, printing):
     i = 0
     sum1 = 0
     for user in users:
@@ -153,18 +154,17 @@ def calculate_all_average(users, movies, ratings):
             if ratings[user - 1][movie - 1] > 0:
                 i += 1
                 sum1 += ratings[user - 1][movie - 1]
-    
-    print(sum1/i)
+    if printing:
+        print(sum1/i)
     return sum1 / i
 
 
-def do_K_nearest_neighbour(users, movies, ratings, directory, K=40):
+def do_K_nearest_neighbour(users, movies, ratings, directory="Test1", K=40, bounding=True, printing=True):
     i = 0
     rated = ratings
-    all_average = calculate_all_average(users, movies, ratings)
+    all_average = calculate_all_average(users, movies, ratings, printing)
     user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
-    movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[:-1]), user_average_array, all_average)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[-1]), user_average_array, all_average, printing)
     starting_time = time.time()
     for user in users:
         i += 1
@@ -173,20 +173,21 @@ def do_K_nearest_neighbour(users, movies, ratings, directory, K=40):
         elapsed_time = current_time - starting_time
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-        print(directory[:-1], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
-              " tid tilbage: ", format_time(remaining_time))
+        if printing:
+            print(directory[-1], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+                  " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (
-                rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average, K))
+                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, K))
 
-    for user in users:
-        for movie in movies:
-            if rated[user - 1][movie - 1] > 5:
-                rated[user - 1][movie - 1] = 5
-            elif rated[user - 1][movie - 1] < 1:
-                rated[user - 1][movie - 1] = 1
+    if bounding:
+        for user in users:
+            for movie in movies:
+                if rated[user - 1][movie - 1] > 5:
+                    rated[user - 1][movie - 1] = 5
+                elif rated[user - 1][movie - 1] < 1:
+                    rated[user - 1][movie - 1] = 1
 
     return rated
 

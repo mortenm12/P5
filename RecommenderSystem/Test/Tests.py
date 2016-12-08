@@ -1,20 +1,22 @@
 import unittest
 import numpy
 import MatrixFactorization as MF
-import ContentBased as CB
-import v20NearestNeighbour as NNCV
-import v21NearestNeighbour as NNPC
 import PrecisionRecall as PR
 import DataAPI
 import copy
 
 
-class Test(unittest.TestCase):
+class Input:
     R = [[0, 0, 0, 4, 0],
          [3, 2, 4, 0, 2],
          [0, 3, 0, 0, 0],
          [0, 4, 0, 0, 0],
          [0, 0, 0, 2, 0]]
+    U_averages = [4, 2.75, 3, 4, 2]
+    M_averages = [3, 3, 4, 3, 2]
+    Global_average = 3
+    Head = [1, 3]
+    Tail = [0, 2, 4]
     R = numpy.array(R)
     P = [[2.0, 1.0],
          [1.0, 2.0],
@@ -38,8 +40,34 @@ class Test(unittest.TestCase):
              DataAPI.Movie(5, None, [1, 16])]
     U_obj = DataAPI.add_rating_metrics_to_users(M_obj, U_obj, R)
 
+    def matrix_to_string(self, m):
+        return "[" + "]\n[".join([", ".join([str(m[x][y]) for y in range(len(m[x]))]) for x in range(len(m))]) + "]"
+
+    def matrix_equals(self, x, y):
+        for i in range(len(x)):
+            for j in range(len(x[0])):
+                if not self.float_equals(x[i][j], y[i][j]):
+                    return False
+        return True
+
+    def float_equals(self, x, y):
+        if x - y > 0.0000001:
+            return False
+        elif x - y < -0.0000001:
+            return False
+        else:
+            return True
+
+    def array_equals(self, x, y):
+        for i in range(len(x)):
+            if not self.float_equals(x[i], y[i]):
+                return False
+        return True
+
+
+class Test(unittest.TestCase, Input):
     def test_precision_recall(self):
-        PR.all_ratings = Test.R
+        PR.all_ratings = self.R
         expected = [
             (1, 1),
             (0.25, 1),
@@ -57,7 +85,7 @@ class Test(unittest.TestCase):
                 recall = PR.calculate_recall(confusion_matrix)
             else:
                 recall = None
-            return (precision, recall)
+            return precision, recall
 
         def predicate(rating, user, movie):
             if rating == 0:
@@ -90,51 +118,6 @@ class Test(unittest.TestCase):
         alpha = 0.05
         beta = 0.002
         Pn, Qn = MF.matrix_factorization(self.P, self.Q, copy.deepcopy(self.R), K, steps, alpha, beta, False)
-        self.assertTrue(matrix_equals(Qn, Qout))
-        self.assertTrue(matrix_equals(Pn, Pout))
+        self.assertTrue(self.matrix_equals(Qn, Qout))
+        self.assertTrue(self.matrix_equals(Pn, Pout))
         print("Matrix Factorization works!")
-
-    def test_content_based(self):
-        Rout = [[4.03279555899, 3.0, 3.0, 5.0, 3.63245553203],
-                [1.45080666152, 1.73508893593, 5.0, 2.2, 1.73508893593],
-                [3.0, 1.0, 3.0, 3.0, 3.0],
-                [3.0, 5.0, 3.0, 3.0, 3.0],
-                [1.96720444101, 3.0, 3.0, 1.0, 2.36754446797]]
-
-        Rn = CB.do_content_based(copy.deepcopy(self.R), self.M_obj, self.U_obj, False)
-
-        self.assertTrue(matrix_equals(Rn, Rout))
-        print("Content Based works!")
-
-    def test_k_nearest_neighbour_cosine(self):
-        Rout = copy.deepcopy(self.R)
-
-        Rn = NNCV.do_nearest_neighbour(self.U_id, self.M_id, copy.deepcopy(self.R), printing=False, bounding=False)
-
-        self.assertTrue(matrix_equals(Rn, Rout))
-        print("K-Nearest Neighbour with Cosine Vector works!")
-
-    def test_k_nearest_neighbour_pearson(self):
-        Rout = copy.deepcopy(self.R)
-
-        Rn = NNPC.do_nearest_neighbour(self.U_id, self.M_id, copy.deepcopy(self.R), printing=False, bounding=False)
-
-        self.assertTrue(matrix_equals(Rn, Rout))
-        print("K-Nearest Neighbour with Pearson Correlation works!")
-
-
-def matrix_equals(x, y):
-    for i in range(len(x)):
-        for j in range(len(x[0])):
-            if not float_equals(x[i][j], y[i][j]):
-                return False
-    return True
-
-
-def float_equals(x, y):
-    if x - y > 0.0000001:
-        return False
-    elif x - y < -0.0000001:
-        return False
-    else:
-        return True
