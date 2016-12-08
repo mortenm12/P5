@@ -169,7 +169,7 @@ def KNN(x):
 
     i = 0
     rated = ratings
-    all_average = calculate_all_average(users, movies, ratings, printing)
+    all_average = calculate_all_average(users, movies, ratings)
     user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
     movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
     weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array, all_average)
@@ -182,7 +182,6 @@ def KNN(x):
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
         print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
-                  " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
