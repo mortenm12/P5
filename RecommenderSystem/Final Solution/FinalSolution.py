@@ -143,15 +143,14 @@ def do_hybrid_recommendation(test):
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
-        if user == 800:
-            hej = 0
         recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 10, head_movies, tail_movies))
         print(user, ":", recommendations[user - 1])
 
     return recommendations
 
-for i in [1, 2, 3, 4, 5]:
-    recommendations = do_hybrid_recommendation(i)
-    result = average_precision_recall(recommendations, is_relevant)
-    print(result)
-    log(result)
+
+#for i in [1, 2, 3, 4, 5]:
+#    recommendations = do_hybrid_recommendation(i)
+#    result = average_precision_recall(recommendations, is_relevant)
+#    print(result)
+#    log(result)
