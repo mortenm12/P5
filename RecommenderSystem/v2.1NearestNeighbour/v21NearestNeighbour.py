@@ -85,7 +85,7 @@ def format_time(t):
 
 
 # Calculating the weight matrix
-def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average, printing=True):
+def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average):
     t_start = time.time()
     weight_matrix = []
     for i in range(len(movies)):
@@ -97,9 +97,8 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array, all_averag
         t_current = time.time()
         t_elapsed = t_current - t_start
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
-        if printing:
-            print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
-                  format_time(t_remaining))
+        print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+              format_time(t_remaining))
         for user2 in users:
             if user1 != user2:
                 weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies, average_array, all_average)
@@ -147,7 +146,7 @@ def calculate_movie_average_rating(movies, ratings, users, all_average):
 
 
 # returns the average of all the ratings
-def calculate_all_average(users, movies, ratings, printing=True):
+def calculate_all_average(users, movies, ratings):
     i = 0
     sum1 = 0
     for user in users:
@@ -155,26 +154,25 @@ def calculate_all_average(users, movies, ratings, printing=True):
             if ratings[user - 1][movie - 1] > 0:
                 i += 1
                 sum1 += ratings[user - 1][movie - 1]
-    if printing:
-        print(sum1/i)
+    
+    print(sum1/i)
     return sum1 / i
 
 
-def calculate_recommendation_matrix(directory, printing=True):
+# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
+def KNN(x):
+    directory = "Test" + str(x)
+
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(directory)
-    rated = do_nearest_neighbour(users, movies, ratings, directory, printing)
-    write_results(movies, users, rated, directory, printing)
 
-
-def do_nearest_neighbour(users, movies, ratings, directory="Test1", printing=True, bounding=True):
     i = 0
     rated = ratings
     all_average = calculate_all_average(users, movies, ratings, printing)
     user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
     movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[-1:]), user_average_array, all_average, printing)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array, all_average)
     starting_time = time.time()
     for user in users:
         i += 1
@@ -183,28 +181,21 @@ def do_nearest_neighbour(users, movies, ratings, directory="Test1", printing=Tru
         elapsed_time = current_time - starting_time
         remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
 
-        if printing:
-            print(directory[-1:], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+        print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
                   " tid tilbage: ", format_time(remaining_time))
 
         for movie in movies:
             if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (
-                rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
+                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
 
-    if bounding:
-        for user in users:
-            for movie in movies:
-                if rated[user - 1][movie - 1] > 5:
-                    rated[user - 1][movie - 1] = 5
-                elif rated[user - 1][movie - 1] < 1:
-                    rated[user - 1][movie - 1] = 1
+    for user in users:
+        for movie in movies:
+            if rated[user - 1][movie - 1] > 5:
+                rated[user - 1][movie - 1] = 5
+            elif rated[user - 1][movie - 1] < 1:
+                rated[user - 1][movie - 1] = 1
 
-    return rated
-
-
-def write_results(users, movies, rated, directory, printing=True):
-    output = open("Output/" + directory + "/ratings.data", "w")
+    output = open("../v2.1NearestNeighbour/Output/Test" + str(x) + "/ratings.data", "w")
     output.write("   ID, ")
     for movie in movies:
         output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))
@@ -214,8 +205,7 @@ def write_results(users, movies, rated, directory, printing=True):
 
     for user in users:
         i += 1
-        if printing:
-            print("Writing", round((i / len(users)) * 100, 1), "%")
+        print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
         for movie in movies:
             output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
