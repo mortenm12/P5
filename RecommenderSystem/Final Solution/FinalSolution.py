@@ -4,9 +4,9 @@ from ContentBased import calculate_recommendation_matrix
 from PrecisionRecall import AveragePrecisionRecall
 
 
-def log(evaluation_result):
+def log(evaluation_result, x):
     file = open("EvaluationLog.txt", "a")
-    file.write(str(evaluation_result), "\n")
+    file.write(str(str(x) + ":" + str(evaluation_result) + "\n"))
 
     if not file.closed:
         file.close()
@@ -83,11 +83,15 @@ def recommend(usernr, old_ratings, movies, new_ratings, users, k, test_set):
     tail_tuple.sort(key=lambda x: x[0], reverse=True)
 
     return_array = []
+    rest = 0
 
     for i in range(0, int(round(head_percent * k, 0))):
-        return_array.append(head_tuple[i][1])
+        if i >= len(head_tuple):
+            rest += 1
+        else:
+            return_array.append(head_tuple[i][1])
 
-    for i in range(0, int(round(tail_percent * k, 0))):
+    for i in range(0, int(round(tail_percent * k + rest, 0))):
         return_array.append(tail_tuple[i][1])
 
     return return_array
@@ -124,11 +128,11 @@ def do_hybrid_recommendation(test):
     ratings = DataAPI.read_ratings(test_set)
 
     # Do K-Nearest Neigbour
-    KNN(test)
+    #KNN(test)
     head_ratings = DataAPI.read_recommendation_matrix("v2.1NearestNeighbour", test_set)
 
     # Do Content Based
-    calculate_recommendation_matrix(test_set)
+    #calculate_recommendation_matrix(test_set)
     tail_ratings = DataAPI.read_recommendation_matrix("Weighted Content Based", test_set)
 
     # Merge results
@@ -138,7 +142,7 @@ def do_hybrid_recommendation(test):
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
-        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 10, test_set))
+        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 100, test_set))
         print(user, ":", recommendations[user - 1])
 
     return recommendations
@@ -147,4 +151,4 @@ for i in [1, 2, 3, 4, 5]:
     recommendations = do_hybrid_recommendation(i)
     result = AveragePrecisionRecall(recommendations, is_relevant)
     print(result)
-    log(result)
+    log(result, i)
