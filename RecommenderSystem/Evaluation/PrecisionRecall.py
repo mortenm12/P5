@@ -14,20 +14,22 @@ class NoValidEntriesError(Exception):
 # return - A confusion-matrix generator. (Defined inside function)
 #
 def ConfusionMatrixGeneratorFromPredicate(predicate):
-    relevantCount = 0
-    irrelevantCount = 0
+    relevantCount = []
+    irrelevantCount = []
     relevanceMatrix = []
 
     #Count how many ratings does/doesn't satisfy the predicate.
     #Also record the results in correctnessMatrix in case of a slow predicate.
     for user, userRatings in enumerate(AllRatings):
         relevanceMatrix.append([])
+        relevantCount.append(0)
+        irrelevantCount.append(0)
         for movie, rating in enumerate(userRatings):
             isRelevant = predicate(rating, user, movie)
             if isRelevant == True:
-                relevantCount += 1
+                relevantCount[user] += 1
             elif isRelevant == False:
-                irrelevantCount += 1
+                irrelevantCount[user] += 1
             relevanceMatrix[user].append(isRelevant)
 
     # ConfusionMatrixGenerator(recommendations, user):
@@ -50,8 +52,8 @@ def ConfusionMatrixGeneratorFromPredicate(predicate):
                 confusionMatrix["FalsePositive"] += 1
 
         # Subtract count of recommended from total count to find count of unrecommended.
-        confusionMatrix["FalseNegative"] = relevantCount - confusionMatrix["TruePositive"]
-        confusionMatrix["TrueNegative"] = irrelevantCount -  confusionMatrix["FalsePositive"]
+        confusionMatrix["FalseNegative"] = relevantCount[user] - confusionMatrix["TruePositive"]
+        confusionMatrix["TrueNegative"] = irrelevantCount[user] -  confusionMatrix["FalsePositive"]
 
         return confusionMatrix
 
