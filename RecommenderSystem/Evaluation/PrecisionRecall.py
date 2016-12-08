@@ -48,6 +48,7 @@ def confusion_matrix_generator_from_predicate(predicate, all_ratings):
 
         # Count how many recommendations does/doesn't satisfy the predicate.
         for movie in recommendations:
+            # Relevance could be None when undecidable, so check like this.
             if relevance_matrix[user][movie] == True:
                 confusion_matrix["TruePositive"] += 1
             elif relevance_matrix[user][movie] == False:
