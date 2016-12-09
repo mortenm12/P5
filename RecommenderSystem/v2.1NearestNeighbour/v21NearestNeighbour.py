@@ -19,7 +19,7 @@ def cos(a, b):
         return 0
 
 
-# lenght calculate the lenght of a vector
+# length calculate the length of a vector
 def length(vector):
     sum = 0
 
@@ -53,9 +53,8 @@ def k_nearest_neighbour(movie, user1, k, ratings, users, weight_matrix, user_ave
 
 
 # Returns a rating for a user and a movie
-def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average):
-    k = 40
-    weight_rating_tuples = k_nearest_neighbour(movie, user, k, ratings, users, weight_matrix, user_average_array)
+def rate(movie, user, users, ratings, weight_matrix, user_average_array, K=40):
+    weight_rating_tuples = k_nearest_neighbour(movie, user, K, ratings, users, weight_matrix, user_average_array)
     sum1 = 0
     sum2 = 0
     if len(weight_rating_tuples) == 0:
@@ -68,7 +67,7 @@ def rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_a
     if sum2 != 0:
         return (sum1/sum2) + user_average_array[user - 1]
     else:
-        return sum1 + user_average_array[user - 1]
+        return sum1
 
 
 # format an int in seconds, to a string formatted as time
@@ -85,7 +84,7 @@ def format_time(t):
 
 
 # Calculating the weight matrix
-def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average):
+def calculate_weight_matrix(movies, ratings, users, x, average_array, all_average, printing):
     t_start = time.time()
     weight_matrix = []
     for i in range(len(movies)):
@@ -97,8 +96,9 @@ def calculate_weight_matrix(movies, ratings, users, x, average_array, all_averag
         t_current = time.time()
         t_elapsed = t_current - t_start
         t_remaining = (t_elapsed * len(movies)) / user1 - t_elapsed
-        print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
-              format_time(t_remaining))
+        if printing:
+            print(x, " Calculating Weight", round((user1 / len(users)) * 100, 1), "% tid brugt: ", format_time(t_elapsed), " tid tilbage: ",
+                  format_time(t_remaining))
         for user2 in users:
             if user1 != user2:
                 weight_matrix[user1 - 1][user2 - 1] = weight(user1, user2, ratings, movies, average_array, all_average)
@@ -145,8 +145,8 @@ def calculate_movie_average_rating(movies, ratings, users, all_average):
     return average_array
 
 
-# returens the average of all the ratings
-def calculate_all_average(users, movies, ratings):
+# returns the average of all the ratings
+def calculate_all_average(users, movies, ratings, printing):
     i = 0
     sum1 = 0
     for user in users:
@@ -154,8 +154,42 @@ def calculate_all_average(users, movies, ratings):
             if ratings[user - 1][movie - 1] > 0:
                 i += 1
                 sum1 += ratings[user - 1][movie - 1]
-    print(sum1/i)
+    if printing:
+        print(sum1/i)
     return sum1 / i
+
+
+def do_K_nearest_neighbour(users, movies, ratings, directory="Test1", K=40, bounding=True, printing=True):
+    i = 0
+    rated = ratings
+    all_average = calculate_all_average(users, movies, ratings, printing)
+    user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
+    weight_matrix = calculate_weight_matrix(movies, ratings, users, int(directory[-1]), user_average_array, all_average, printing)
+    starting_time = time.time()
+    for user in users:
+        i += 1
+
+        current_time = time.time()
+        elapsed_time = current_time - starting_time
+        remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
+
+        if printing:
+            print(directory[-1], " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time),
+                  " tid tilbage: ", format_time(remaining_time))
+
+        for movie in movies:
+            if ratings[user - 1][movie - 1] == 0.0:
+                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, K))
+
+    if bounding:
+        for user in users:
+            for movie in movies:
+                if rated[user - 1][movie - 1] > 5:
+                    rated[user - 1][movie - 1] = 5
+                elif rated[user - 1][movie - 1] < 1:
+                    rated[user - 1][movie - 1] = 1
+
+    return rated
 
 
 # runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
@@ -166,32 +200,7 @@ def KNN(x):
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(directory)
 
-    i = 0
-    rated = ratings
-    all_average = calculate_all_average(users, movies, ratings)
-    user_average_array = calculate_user_average_rating(movies, ratings, users, all_average)
-    movie_average_array = calculate_movie_average_rating(movies, ratings, users, all_average)
-    weight_matrix = calculate_weight_matrix(movies, ratings, users, x, user_average_array, all_average)
-    starting_time = time.time()
-    for user in users:
-        i += 1
-
-        current_time = time.time()
-        elapsed_time = current_time - starting_time
-        remaining_time = ((elapsed_time * len(users)) / i) - elapsed_time
-
-        print(x, " Rater", round((i / len(users)) * 100, 1), "% tid brugt: ", format_time(elapsed_time), " tid tilbage: ", format_time(remaining_time))
-
-        for movie in movies:
-            if ratings[user - 1][movie - 1] == 0.0:
-                rated[user - 1][movie - 1] = (rate(movie, user, users, ratings, weight_matrix, user_average_array, movie_average_array, all_average))
-
-    for user in users:
-        for movie in movies:
-            if rated[user - 1][movie - 1] > 5:
-                rated[user - 1][movie - 1] = 5
-            elif rated[user - 1][movie - 1] < 1:
-                rated[user - 1][movie - 1] = 1
+    new_ratings = do_K_nearest_neighbour(users, movies, ratings, directory)
 
     output = open("../v2.1NearestNeighbour/Output/Test" + str(x) + "/ratings.data", "w")
     output.write("   ID, ")
@@ -206,9 +215,16 @@ def KNN(x):
         print("Writing", round((i / len(users)) * 100, 1), "%")
         output.write("{:>5}".format(user) + ", ")
         for movie in movies:
-            output.write("{: .2f}".format(rated[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
+            output.write("{: .2f}".format(new_ratings[user - 1][movie - 1]) + (", " if movie < len(movies) else ""))
 
         output.write("\n")
 
     if not output.closed:
         output.close()
+
+    return new_ratings
+
+# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
+#for x in range(1, 6):
+#    calculate_recommendation_matrix("Test" + str(x))
+

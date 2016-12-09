@@ -1,12 +1,12 @@
 from v21NearestNeighbour import KNN
 import DataAPI
 from ContentBased import calculate_recommendation_matrix
-from PrecisionRecall import AveragePrecisionRecall
+from PrecisionRecall import average_precision_recall
 
 
 def log(evaluation_result, x):
     file = open("EvaluationLog.txt", "a")
-    file.write(str(str(x) + ":" + str(evaluation_result) + "\n"))
+    file.write(str(x) + ":" + str(evaluation_result) + "\n")
 
     if not file.closed:
         file.close()
@@ -21,13 +21,9 @@ def is_relevant(rating, User, Movie):
         return False
 
 
-def get_head_and_tail(k, directory):
+def get_head_and_tail(k, users, movies, ratings):
     head_movies = []
     tail_movies = []
-
-    users = DataAPI.read_users_as_id_list()
-    movies = DataAPI.read_movies_as_id_list()
-    ratings = DataAPI.read_ratings(directory)
 
     for j in range(0, len(movies)):
         sum1 = 0
@@ -61,39 +57,46 @@ def merge(head_movies, tail_movies, head_ratings, tail_ratings, users):
     return ratings
 
 
-def recommend(usernr, old_ratings, movies, new_ratings, users, k, test_set):
-    head_movies, tail_movies = get_head_and_tail(80, test_set)
+def recommend(usernr, old_ratings, movies, new_ratings, k, head_movies, tail_movies):
     head_percent, tail_percent = division(usernr, head_movies, tail_movies, movies, old_ratings)
-
-    for user in range(0, len(users)):
-        for movie in range(0, len(movies)):
-            if old_ratings[user][movie] > 0.0:
-                new_ratings[user][movie] = 0.0
 
     head_tuple = []
     for movie in head_movies:
-        head_tuple.append([new_ratings[usernr][movie], movie])
+        if not old_ratings[usernr][movie] > 0:
+            head_tuple.append([new_ratings[usernr][movie], movie])
 
     head_tuple.sort(key=lambda x: x[0], reverse=True)
 
     tail_tuple = []
     for movie in tail_movies:
-        tail_tuple.append([new_ratings[usernr][movie], movie])
+        if not old_ratings[usernr][movie] > 0:
+            tail_tuple.append([new_ratings[usernr][movie], movie])
 
     tail_tuple.sort(key=lambda x: x[0], reverse=True)
 
     return_array = []
-    rest = 0
 
-    for i in range(0, int(round(head_percent * k, 0))):
-        if i >= len(head_tuple):
-            rest += 1
-        else:
+    if k > len(tail_tuple) + len(head_tuple):
+        k = len(tail_tuple) + len(head_tuple)
+
+    limit = int(round(head_percent*k, 0))
+
+    if len(head_tuple) == 0 and len(tail_tuple) == 0:
+        pass
+    elif len(head_tuple) == 0:
+        for i in range(k):
+            return_array.append(tail_tuple[i][1])
+    elif len(tail_tuple) == 0:
+        for i in range(k):
             return_array.append(head_tuple[i][1])
-
-    for i in range(0, int(round(tail_percent * k + rest, 0))):
-        return_array.append(tail_tuple[i][1])
-
+    else:
+        j = 0
+        for i in range(k):
+            if i + 1 <= limit:
+                return_array.append(head_tuple[i][1])
+            elif i + 1 > limit:
+                return_array.append(tail_tuple[j][1])
+                j += 1
     return return_array
 
 
@@ -107,10 +110,8 @@ def division(usernr, head_movies, tail_movies, movies, ratings):
             sum1 += 1
             if movie in head_movies:
                 head += 1
-
             elif movie in tail_movies:
                 tail += 1
-
             else:
                 raise ValueError("well, fuck")
 
@@ -136,19 +137,20 @@ def do_hybrid_recommendation(test):
     tail_ratings = DataAPI.read_recommendation_matrix("Weighted Content Based", test_set)
 
     # Merge results
-    head_movies, tail_movies = get_head_and_tail(41, test_set)
+    head_movies, tail_movies = get_head_and_tail(41, users, movies, ratings)
     new_ratings = merge(head_movies, tail_movies, head_ratings, tail_ratings, users)
 
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
-        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, users, 100, test_set))
+        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, 10, head_movies, tail_movies))
         print(user, ":", recommendations[user - 1])
 
     return recommendations
 
+
 for i in [1, 2, 3, 4, 5]:
     recommendations = do_hybrid_recommendation(i)
-    result = AveragePrecisionRecall(recommendations, is_relevant)
-    print(result)
+    result = average_precision_recall(recommendations, is_relevant)
+    print(str(i) + ":" + str(result))
     log(result, i)
