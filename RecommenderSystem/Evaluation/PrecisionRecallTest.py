@@ -1,15 +1,16 @@
 import PrecisionRecall
 import random
+import numpy
 
 number_of_users = 943
 number_of_movies = 1682
 number_of_recommendations = 10
 
+ratings = numpy.array(PrecisionRecall.AllRatings)
+ratingsPerMovie = numpy.sum(numpy.sign(ratings), 0)
 
 def predicate(rating, user, movie):
-    if rating == 0:
-        return None
-    elif rating >= 4:
+    if ratingsPerMovie[movie] < 42:
         return True
     else:
         return False
