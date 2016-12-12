@@ -42,22 +42,22 @@ class EvaluationAlgorithm:
         # Mean User-Ratings Weighted Absolute Error
         "MURWAE": EvaluationAlgorithmPrefab("MURWAE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr))))),
-            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1))), True),
+            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1))), True),
 
         # Mean Movie-Ratings Weighted Absolute Error
         "MMRWAE": EvaluationAlgorithmPrefab("MMRWAE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.AE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr))))),
-            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1)).T), True),
+            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1)).T), True),
 
         # Root Mean User-Ratings Weighted Square Error
         "RMURWSE": EvaluationAlgorithmPrefab("RMURWSE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr)))) ** 0.5),
-            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1))), True),
+            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1))), True),
 
         # Root Mean Movie-Ratings Weighted Square Error
         "RMMRWSE": EvaluationAlgorithmPrefab("RMMRWSE", lambda test_array, args: ft.partial(lambda weights: (
             EvaluationAlgorithm.SE, lambda arr: npm.mean(arr * (weights / npm.mean(weights * np.ones_like(arr)))) ** 0.5),
-            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 1) + 1)).T), True),
+            weights=np.atleast_2d(np.reciprocal(np.sum(np.sign(test_array), 0) + 1)).T), True),
 
         # In the sliced measures, a mask is applied to the error-array to ignore the ratings of users/movies with an amount
         # of ratings outside a given boundary.
@@ -74,25 +74,25 @@ class EvaluationAlgorithm:
         # User-Ratings Sliced Mean Absolute Error
         "URSMAE": EvaluationAlgorithmPrefab("URSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
-            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Mean Absolute Error
         "MRSMAE": EvaluationAlgorithmPrefab("MRSMAE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.AE, lambda arr: np.mean(npm.masked_where(array_mask, arr))),
-            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True),
 
         # User-Ratings Sliced Root Mean Square Error
         "URSRMSE": EvaluationAlgorithmPrefab("URSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
-            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
                                       test_array.shape)), True),
 
         # Movie-Ratings Sliced Root Mean Square Error
         "MRSRMSE": EvaluationAlgorithmPrefab("MRSRMSE", lambda test_array, args: ft.partial(lambda array_mask: (
             EvaluationAlgorithm.SE, lambda arr: np.mean(npm.masked_where(array_mask, arr)) ** 0.5),
-            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 1), *args))).T,
+            array_mask=np.broadcast_to(np.atleast_2d(npm.getmask(npm.masked_outside(np.sum(np.sign(test_array), 0), *args))),
                                       test_array.shape)), True)
     }
 
@@ -259,13 +259,13 @@ predictionAlgorithms = [
     "Matrix Factorization V.2"
 ]
 
-splits = [1, 2, 4, 8, 16, 32, 41, 42, 43, 64, 128]
+splits = [1, 2, 4, 8, 16, 32, 64, 128]
 
 evaluationAlgorithms = []
 
 for split in splits:
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (0,  split - 1)))
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["MRSRMSE"], (split,  1000)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (0,  split - 1)))
+    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (split,  1000)))
 
 def print_splits(predictionAlgorithms, splits):
     evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
@@ -276,7 +276,11 @@ def print_splits(predictionAlgorithms, splits):
             for headAlgo in predictionAlgorithms:
                 sums[(tailAlgo, headAlgo)] = 0
                 for i in range(1,6):
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("MRSRMSE", (0, split - 1))]
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("MRSRMSE", (split,  1000))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("URSRMSE", (0, split - 1))]
+                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("URSRMSE", (split,  1000))]
         lowest = min(sums, key = lambda item: sums[item])
         print("Split:" + str(split) + " BestTailHead:" + str(lowest) + " AverageError:" + str(sums[lowest] / 10))
+
+evaluator = RatingEvaluator(["Matrix Factorization V.2"], range(1,6), evaluationAlgorithms)
+evaluator.evaluate_all_algorithms()
+evaluator.log_results("Splits")
