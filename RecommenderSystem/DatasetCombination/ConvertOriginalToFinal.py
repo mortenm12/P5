@@ -1,3 +1,6 @@
+
+
+# Converts the MovieLens genre format to our format.
 def convert_genres():
     oldGenres = open("../FullDataSource/u.genre", "r", encoding="iso_8859_15")
     newGenres = open("../FullData/Genres.data", "w")
@@ -14,6 +17,7 @@ def convert_genres():
         newGenres.close()
 
 
+# Converts the MovieLens users format to our format.
 def convert_users():
     oldUsers = open("../FullDataSource/u.user", "r", encoding="iso_8859_15")
     newUsers = open("../FullData/Users.data", "w")
@@ -28,6 +32,7 @@ def convert_users():
         newUsers.close()
 
 
+# Converts the MovieLens ratings format to our format.
 def convert_ratings(source_directory, target_directory, test_rating_file_name, base_rating_file_name=""):
     oldRatings = open("../" + source_directory + "/" + test_rating_file_name, "r", encoding="iso_8859_15")
     if test_rating_file_name == "u.data":
@@ -60,6 +65,7 @@ def convert_ratings(source_directory, target_directory, test_rating_file_name, b
             newRatings.close()
 
 
+# Converts the MovieLens movie format to our format.
 def convert_movies():
     oldMovies = open("../FullDataSource/u.item", "r", encoding="iso_8859_15")
     newMovies = open("../FullData/Movies.data", "w")
