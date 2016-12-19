@@ -142,9 +142,9 @@ class RatingEvaluator:
             return name + str(args)
 
     # PARAMETERS:
-    # predictionAlgorithms: List of names of predictionAlgorithms to evaluate
-    # testIndexes: List of test-indexes for the tests used
-    # evaluationAlgorithms (Optional): List of evaluation-algorithm prefabs to evaluate with.
+    # prediction_algorithms: List of names of prediction algorithms to evaluate
+    # test_indexes: List of test-indexes for the tests used
+    # evaluation_algorithms (Optional): List of evaluation-algorithm prefabs to evaluate with.
     def __init__(self, prediction_algorithms, test_indexes, evaluation_algorithms=default_algorithms):
         self.test_indexes = test_indexes
 
@@ -253,34 +253,29 @@ class RatingEvaluator:
         if not logfile.closed:
             logfile.close()
 
-predictionAlgorithms = [
-    "Weighted Content Based",
-    "v2.0NearestNeighbour",
-    "Matrix Factorization V.2"
-]
 
-splits = [1, 2, 4, 8, 16, 32, 64, 128]
+# print_splits:
+# Prints out the ideal prediction algorithms for the splits
 
-evaluationAlgorithms = []
+# INPUT:
+# prediction_algorithms: List of the prediction algorithms to consider for the split
+# splits: List of splits to evaluate
+def print_splits(prediction_algorithms, splits):
+    evaluation_algorithms = []
 
-for split in splits:
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (0,  split - 1)))
-    evaluationAlgorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (split,  1000)))
+    for split in splits:
+        evaluation_algorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (0, split - 1)))
+        evaluation_algorithms.append((EvaluationAlgorithm.prefabs["URSRMSE"], (split, 1000)))
 
-def print_splits(predictionAlgorithms, splits):
-    evaluator = RatingEvaluator(predictionAlgorithms, range(1, 6), evaluationAlgorithms)
+    evaluator = RatingEvaluator(prediction_algorithms, range(1, 6), evaluation_algorithms)
     evaluator.evaluate_all_algorithms()
     for split in splits:
         sums = {}
-        for tailAlgo in predictionAlgorithms:
-            for headAlgo in predictionAlgorithms:
-                sums[(tailAlgo, headAlgo)] = 0
+        for tail_algo in prediction_algorithms:
+            for head_algo in prediction_algorithms:
+                sums[(tail_algo, head_algo)] = 0
                 for i in range(1,6):
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[tailAlgo][i][RatingEvaluator.format_name("URSRMSE", (0, split - 1))]
-                    sums[(tailAlgo, headAlgo)] += evaluator.results[headAlgo][i][RatingEvaluator.format_name("URSRMSE", (split,  1000))]
+                    sums[(tail_algo, head_algo)] += evaluator.results[tail_algo][i][RatingEvaluator.format_name("URSRMSE", (0, split - 1))]
+                    sums[(tail_algo, head_algo)] += evaluator.results[head_algo][i][RatingEvaluator.format_name("URSRMSE", (split,  1000))]
         lowest = min(sums, key = lambda item: sums[item])
         print("Split:" + str(split) + " BestTailHead:" + str(lowest) + " AverageError:" + str(sums[lowest] / 10))
-
-evaluator = RatingEvaluator(["Matrix Factorization V.2"], range(1,6), evaluationAlgorithms)
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Splits")
