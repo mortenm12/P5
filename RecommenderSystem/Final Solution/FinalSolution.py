@@ -122,18 +122,18 @@ def division(usernr, head_movies, tail_movies, movies, ratings):
         return 0.5, 0.5
 
 
-def do_hybrid_recommendation(test):
-    test_set = "Test" + str(test)
+def do_hybrid_recommendation(test_set):
+
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(test_set)
 
     # Do K-Nearest Neigbour
-    #KNN(test)
+    KNN(test_set)
     head_ratings = DataAPI.read_recommendation_matrix("v2.1NearestNeighbour", test_set)
 
     # Do Content Based
-    #calculate_recommendation_matrix(test_set)
+    calculate_recommendation_matrix(test_set)
     tail_ratings = DataAPI.read_recommendation_matrix("Weighted Content Based", test_set)
 
     # Merge results
@@ -149,8 +149,9 @@ def do_hybrid_recommendation(test):
     return recommendations
 
 
-for i in [1, 2, 3, 4, 5]:
-    recommendations = do_hybrid_recommendation(i)
-    result = average_precision_recall(recommendations, is_relevant)
-    print(str(i) + ":" + str(result))
-    log(result, i)
+# Running the Hybrid Recommender on the full Dataset
+do_hybrid_recommendation("FullData")
+
+
+
+

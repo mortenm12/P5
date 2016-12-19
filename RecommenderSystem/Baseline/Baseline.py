@@ -55,7 +55,7 @@ def calculate_all_average(users, movies, ratings):
 
 
 
-#runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
+#runs all the average function, and the ratings, and writing all the ratings to an output file
 for x in range(1, 6):
     directory = "Test" + str(x)
 

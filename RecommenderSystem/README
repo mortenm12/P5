@@ -1,0 +1,24 @@
+Folder name             - Description
+
+Baseline                - Baseline predictor
+ColdStart               - Code for calculating amount of cold start items and users
+DataAnalysis            - Code for analysing the Movielens Dataset 10K
+DataAPI                 - Code for getting info out of FinalData
+DatasetCombination      - Code for converting Movielens Dataset 10k into Fulldata
+Evaluation              - Code for evaluation
+Final Solution          - Our Hybrid Recommender
+FullData                - Converted data from Movielens Dataset 10k
+FullDataSource          - Data from Movielens Dataset 10k
+Matrix Factorization    - Matrix Factorization without Bias
+Matrix Factorization V.2- Matrix Factorization with Bias
+Test1			- Converted Ratings for Testset 1
+Test2			- Converted Ratings for Testset 2
+Test3			- Converted Ratings for Testset 3
+Test4			- Converted Ratings for Testset 4
+Test5			- Converted Ratings for Testset 5
+v2.0NearestNeighbour    - K-Nearest Neighbour without Baseline
+v2.1NearestNeighbour    - K-Nearest Neighbour with Baseline
+Weighted Content Based  - Content Based with Improvement
+
+
+To run our Hybrid Recommender, run the code "Final Solution/FinalSolution.py" with Python 3.5.2 interpreter. This will print 10 recommendation for every users.

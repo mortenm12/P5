@@ -194,7 +194,7 @@ def do_K_nearest_neighbour(users, movies, ratings, directory="Test1", K=40, boun
 
 # runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
 def KNN(x):
-    directory = "Test" + str(x)
+    directory = str(x)
 
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
@@ -224,7 +224,5 @@ def KNN(x):
 
     return new_ratings
 
-# runs all the average function, the weight matrix and the ratings, and writing all the ratings to an output file
-#for x in range(1, 6):
-#    calculate_recommendation_matrix("Test" + str(x))
+
 
