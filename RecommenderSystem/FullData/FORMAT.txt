@@ -1,0 +1,18 @@
+GROUP NAME: D504E16
+
+Our format:
+Id lists (genreIds, actorIds and directorIds) are comma seperated.
+
+FILE			FORMAT
+---------------------------------------------------------------------
+Actors.data		id|name
+
+Directors.data		id|name
+
+Genres.data		id|name
+
+Movies.data		id|title|releaseDate|genreIds|actorIds|directorIds
+
+Ratings.data		id|movieId|userId|timestamp
+
+Users.data		id|age|sex|profession|zipCode
