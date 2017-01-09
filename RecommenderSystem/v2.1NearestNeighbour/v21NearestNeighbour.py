@@ -202,7 +202,7 @@ def KNN(x):
 
     new_ratings = do_K_nearest_neighbour(users, movies, ratings, directory)
 
-    output = open("../v2.1NearestNeighbour/Output/Test" + str(x) + "/ratings.data", "w")
+    output = open("../v2.1NearestNeighbour/Output/" + directory + "/ratings.data", "w")
     output.write("   ID, ")
     for movie in movies:
         output.write("{:>5}".format(movie) + (", " if movie < len(movies) else ""))

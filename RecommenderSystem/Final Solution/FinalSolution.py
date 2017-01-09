@@ -2,6 +2,20 @@ from v21NearestNeighbour import KNN
 import DataAPI
 from ContentBased import calculate_recommendation_matrix
 from PrecisionRecall import average_precision_recall
+import Evaluation
+
+
+# Algorithm to write a result matrix to a file.
+def write_matrix(m, file_name, test_set):
+    file = open("Output/" + test_set + "/" + file_name, "w")
+    file.write(" ID  , " + ", ".join(str(x) for x in range(1, len(m[0]) + 1)) + "\n")
+    for i in range(0, len(m)):
+        file.write("{:>5d}, ".format(i + 1))
+        file.write(", ".join(["{: .2f}".format(x) for x in m[i]]))
+        file.write("\n")
+
+    if not file.closed:
+        file.close()
 
 
 def log(evaluation_result, x):
@@ -123,7 +137,6 @@ def division(usernr, head_movies, tail_movies, movies, ratings):
 
 
 def do_hybrid_recommendation(test_set):
-
     users = DataAPI.read_users_as_id_list()
     movies = DataAPI.read_movies_as_id_list()
     ratings = DataAPI.read_ratings(test_set)
@@ -140,18 +153,22 @@ def do_hybrid_recommendation(test_set):
     head_movies, tail_movies = get_head_and_tail(41, users, movies, ratings)
     new_ratings = merge(head_movies, tail_movies, head_ratings, tail_ratings, users)
 
+    write_matrix(new_ratings, "ratings.data", test_set)
+
     # Generate recommendations
     recommendations = []
     for user in range(0, len(users)):
         recommendations.insert(user, recommend(user, ratings, movies, new_ratings, 10, head_movies, tail_movies))
-        print(user, ":", recommendations[user - 1])
+        # print(user, ":", recommendations[user - 1])
+
+    log(average_precision_recall(recommendations, is_relevant), test_set[-1])
 
     return recommendations
 
 
 # Running the Hybrid Recommender on the full Dataset
-do_hybrid_recommendation("FullData")
-
-
-
-
+#for i in range(1, 6):
+#    do_hybrid_recommendation("Test" + str(i))
+evaluator = Evaluation.RatingEvaluator(["Final Solution"], [1, 2, 3, 4, 5])
+evaluator.evaluate_all_algorithms()
+evaluator.log_results("Final Solution")
