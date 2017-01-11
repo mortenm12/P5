@@ -142,11 +142,11 @@ def do_hybrid_recommendation(test_set):
     ratings = DataAPI.read_ratings(test_set)
 
     # Do K-Nearest Neigbour
-    KNN(test_set)
+    #KNN(test_set)
     head_ratings = DataAPI.read_recommendation_matrix("v2.1NearestNeighbour", test_set)
 
     # Do Content Based
-    calculate_recommendation_matrix(test_set)
+    #calculate_recommendation_matrix(test_set)
     tail_ratings = DataAPI.read_recommendation_matrix("Weighted Content Based", test_set)
 
     # Merge results
@@ -155,20 +155,28 @@ def do_hybrid_recommendation(test_set):
 
     write_matrix(new_ratings, "ratings.data", test_set)
 
-    # Generate recommendations
-    recommendations = []
-    for user in range(0, len(users)):
-        recommendations.insert(user, recommend(user, ratings, movies, new_ratings, 10, head_movies, tail_movies))
-        # print(user, ":", recommendations[user - 1])
+    for i in [1, 5, 10, 20, 30, 40]:
+        # Generate recommendations
+        recommendations = []
+        for user in range(0, len(users)):
+            recommendations.insert(user, recommend(user, ratings, movies, new_ratings, i, head_movies, tail_movies))
+            # print(user, ":", recommendations[user - 1])
 
-    log(average_precision_recall(recommendations, is_relevant), test_set[-1])
+        log("N = " + str(i), "")
+        log(average_precision_recall(recommendations, is_relevant), test_set[-1])
 
-    return recommendations
+#    return recommendations
 
 
 # Running the Hybrid Recommender on the full Dataset
-#for i in range(1, 6):
-#    do_hybrid_recommendation("Test" + str(i))
-evaluator = Evaluation.RatingEvaluator(["Final Solution"], [1, 2, 3, 4, 5])
-evaluator.evaluate_all_algorithms()
-evaluator.log_results("Final Solution")
+for i in range(1, 6):
+    do_hybrid_recommendation("Test" + str(i))
+#evaluation_algorithms = [
+#    (Evaluation.EvaluationAlgorithm.prefabs["MAE"], None),
+#    (Evaluation.EvaluationAlgorithm.prefabs["RMSE"], None),
+#    (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (0, 49)),
+#    (Evaluation.EvaluationAlgorithm.prefabs["MRSRMSE"], (50, 100000))
+#]
+#evaluator = Evaluation.RatingEvaluator(["Final Solution"], [1, 2, 3, 4, 5], evaluation_algorithms)
+#evaluator.evaluate_all_algorithms()
+#evaluator.log_results("Final Solution")
